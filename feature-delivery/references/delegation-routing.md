@@ -2,11 +2,25 @@
 
 Use this reference only after the prerequisite and ambiguity gates have passed and the current task has been scored.
 
+## First-use delegate policy gate
+
+Resolve delegate authorization before showing a delegate-assigned task queue or starting implementation:
+
+1. Use delegates explicitly enabled by the current user request.
+2. Otherwise use delegates explicitly enabled by the nearest `AGENTS.md`.
+3. If neither declares a policy, discover supported installed delegate skill names without loading their full instructions. A read-only check for a matching executable is allowed when useful, but do not authenticate, install, mutate configuration, or treat presence as consent.
+4. Ask one concise question in the user's language that lists only the supported choices available in the environment and asks which delegates are enabled. Do not infer approval because a skill or CLI is installed.
+5. If no delegate is enabled, pause the delegated implementation workflow. Do not silently switch to direct implementation.
+
+The answer authorizes delegates for the current conversation or run only. Persist it to the nearest `AGENTS.md` only after explicit user authorization. Planning-only requests can complete analysis, prerequisite checks, specification, and a delegate-unassigned plan without asking; run this gate when implementation, delegation, or a delegate-assigned queue is requested.
+
+When OpenCode is selected and neither the request nor repository policy supplies its allowed-model set, ask for the allowlist before selecting or preflighting OpenCode. This can be a second concise question after delegate selection when necessary. Codex does not require a model allowlist question; Kimi retains its configured alias.
+
 ## Routing precedence
 
 1. Honor an explicit user delegate/model choice first unless it conflicts with non-negotiable repository safety, architecture, security, or cost policy; stop and ask on conflict.
 2. Apply repository routing and allowed-model policy.
-3. Choose only from approved tools that are available and authenticated in the current environment.
+3. Choose only from user- or repository-approved tools that are available and authenticated in the current environment.
 
 Never silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model. Record `task | C/I/R | delegate | exact model/alias | reason` before dispatch; the reason identifies the winning routing rule and capability/cost fit.
 
