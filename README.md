@@ -12,9 +12,34 @@
 - UI and API synchronization gates run only when the repository requires them.
 - Commits, pushes, deployments, and external mutations follow explicit authorization.
 
-## Install
+## Install with Skills CLI
 
-### With Codex skill installer
+Browse the package before installing:
+
+```bash
+npx skills add ahmed-khaled-z/feature-delivery-skill --list
+```
+
+Install the package, or select the skill explicitly:
+
+```bash
+npx skills add ahmed-khaled-z/feature-delivery-skill
+npx skills add ahmed-khaled-z/feature-delivery-skill --skill feature-delivery
+```
+
+Install for a specific agent, or globally:
+
+```bash
+npx skills add ahmed-khaled-z/feature-delivery-skill --skill feature-delivery --agent codex
+npx skills add ahmed-khaled-z/feature-delivery-skill --skill feature-delivery --agent claude-code
+npx skills add ahmed-khaled-z/feature-delivery-skill --global
+```
+
+The package currently contains one skill: `feature-delivery`.
+
+## Alternative installation
+
+### Codex skill installer
 
 Ask Codex:
 

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Feature delivery",
+      "description": "Plan and deliver software features through prerequisite validation, bounded delegation, independent review, and verification.",
+      "skills": [
+        "feature-delivery"
+      ]
+    }
+  ]
+}
