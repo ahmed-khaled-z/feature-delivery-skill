@@ -1,0 +1,7 @@
+interface:
+  display_name: "Feature Delivery Setup"
+  short_description: "Configure delegates and OpenCode model access"
+  default_prompt: "Use $feature-delivery-setup to configure the delegates and models allowed for feature delivery."
+
+policy:
+  allow_implicit_invocation: false

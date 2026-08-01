@@ -4,15 +4,14 @@ Use this reference only after the prerequisite and ambiguity gates have passed a
 
 ## First-use delegate policy gate
 
-Resolve delegate authorization before showing a delegate-assigned task queue or starting implementation:
+Resolve delegate authorization before feature analysis for any implementation or delegation request:
 
 1. Use delegates explicitly enabled by the current user request.
 2. Otherwise use delegates explicitly enabled by the nearest `AGENTS.md`.
-3. If neither declares a policy, discover supported installed delegate skill names without loading their full instructions. A read-only check for a matching executable is allowed when useful, but do not authenticate, install, mutate configuration, or treat presence as consent.
-4. Ask one concise question in the user's language that lists only the supported choices available in the environment and asks which delegates are enabled. Do not infer approval because a skill or CLI is installed.
-5. If no delegate is enabled, pause the delegated implementation workflow. Do not silently switch to direct implementation.
+3. Otherwise use `~/.config/feature-delivery/config.json` when it exists, has `version: 1`, and explicitly enables at least one delegate.
+4. If no valid policy exists, stop and ask the user to run `$feature-delivery-setup`. Do not silently switch to direct implementation.
 
-The answer authorizes delegates for the current conversation or run only. Persist it to the nearest `AGENTS.md` only after explicit user authorization. Planning-only requests can complete analysis, prerequisite checks, specification, and a delegate-unassigned plan without asking; run this gate when implementation, delegation, or a delegate-assigned queue is requested.
+Installed skills, installed CLIs, and conditional guidance that merely mentions a delegate are not authorization. Planning-only requests can complete analysis, prerequisite checks, specification, and a delegate-unassigned plan without a policy.
 
 When OpenCode is selected and neither the request nor repository policy supplies its allowed-model set, ask for the allowlist before selecting or preflighting OpenCode. This can be a second concise question after delegate selection when necessary. Codex does not require a model allowlist question; Kimi retains its configured alias.
 
@@ -40,7 +39,7 @@ If discovery cannot verify a candidate, choose another approved available delega
 
 ## OpenCode: human-owned allowlist
 
-The human owns OpenCode eligibility. Before selecting or preflighting OpenCode, find an explicit allowed-model set in the user request or repository policy. `opencode models` is discovery only and never authorization. Within the allowed set, the orchestrator selects the cheapest capable model and records it with the reason. If no allowed set exists, stop and ask; never infer or silently substitute a model.
+The human owns OpenCode eligibility. Before selecting or preflighting OpenCode, find an explicit allowed-model set in the resolved request, repository, or global policy. `opencode models` is discovery only and never authorization. Within the allowed set, the orchestrator selects the cheapest capable model and records it with the reason. If no allowed set exists, stop and ask; never infer or silently substitute a model.
 
 ## Kimi: configured alias policy
 
