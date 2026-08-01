@@ -5,7 +5,8 @@
       "title": "Feature delivery",
       "description": "Plan and deliver software features through prerequisite validation, bounded delegation, independent review, and verification.",
       "skills": [
-        "feature-delivery"
+        "feature-delivery",
+        "feature-delivery-setup"
       ]
     }
   ]
