@@ -70,6 +70,32 @@ The skill coordinates implementation; it does not bundle delegate CLIs. Install 
 
 Only the selected delegate is loaded and checked for a task.
 
+## First use: choose delegate tools
+
+Installation does not prompt for delegate choices because the Skills CLI only installs the package; it does not run skill-specific setup hooks. The first time you ask `feature-delivery` to implement or delegate work, the skill checks the current request and the nearest `AGENTS.md` for an existing delegation policy.
+
+If no policy exists, it discovers which supported delegate skills are installed and asks you which available tools to enable, for example:
+
+```text
+Available delegates are Codex, OpenCode, and Kimi. Which may I use for this work?
+```
+
+An installed skill or CLI is never treated as permission. Your answer applies only to the current conversation or run unless you explicitly ask the agent to save it in the nearest `AGENTS.md`. Planning-only requests do not trigger this question until you ask to implement or assign delegates.
+
+Delegate-specific behavior:
+
+- **Codex:** choose Codex once; the orchestrator automatically selects a verified model based on each task's complexity, importance, and risk.
+- **OpenCode:** after enabling OpenCode, provide the exact model allowlist it may use. Model discovery does not grant authorization.
+- **Kimi:** the skill uses the configured/default Kimi alias and does not invent a replacement model name.
+
+You can skip the first-use question for a run by stating the policy in your request:
+
+```text
+Use $feature-delivery to implement organization invitations. Enable Codex and Kimi for this run. Codex selects its model automatically; Kimi uses its configured alias.
+```
+
+To reuse the same policy in a project, explicitly ask the agent to add it to that repository's nearest `AGENTS.md`, or add it yourself as shown below.
+
 ## Configure a project
 
 Put project-specific rules in the repository's nearest `AGENTS.md`, not inside this global skill. A minimal policy can look like:

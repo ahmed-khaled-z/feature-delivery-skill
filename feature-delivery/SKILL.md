@@ -52,7 +52,11 @@ Present the concise queue before implementation. Every row must include: `task |
 
 ## 4. Route delegates and models
 
-Resolve routing by explicit user choice, then repository policy, then approved available tools, while preserving non-negotiable repository constraints. The orchestrator owns automatic Codex model selection; the human owns the OpenCode allowed-model set; configured Kimi aliases remain unchanged. Never silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model.
+Before presenting a delegate-assigned queue or starting implementation, resolve a delegate policy. Use delegates explicitly enabled in the current user request first, then those enabled by the nearest `AGENTS.md`. Installed skills or CLIs are availability evidence, not approval.
+
+If neither source enables a delegate, discover supported installed delegate skill names without loading them and ask one concise question in the user's language listing the available choices. Do not delegate or silently implement directly until the user enables at least one. The choice applies only to the current conversation or run unless the user explicitly authorizes writing it to the nearest `AGENTS.md`; never persist it silently. Planning-only work may proceed without this onboarding until implementation or delegation is requested.
+
+If OpenCode is enabled without an explicit allowed-model set, ask for that allowlist before routing any task to OpenCode. Codex needs no model question because the orchestrator selects its model from verified available models based on the task. Kimi keeps its configured alias. Never infer approval from `opencode models`, silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model, or authenticate during discovery.
 
 Load only the selected delegate skill immediately before preflight and dispatch. When selecting a delegate or model, read [delegation-routing.md](references/delegation-routing.md) for the full ownership, precedence, model-selection, alias, and selected-tool preflight rules.
 
