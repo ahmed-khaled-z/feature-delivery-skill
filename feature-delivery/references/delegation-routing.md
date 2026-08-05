@@ -21,15 +21,25 @@ When OpenCode is selected and neither the request nor repository policy supplies
 2. Apply repository routing and allowed-model policy.
 3. Choose only from user- or repository-approved tools that are available and authenticated in the current environment.
 
-Never silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model. Record `task | C/I/R | delegate | exact model/alias | reason` before dispatch; the reason identifies the winning routing rule and capability/cost fit.
+Never silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model. Record `task | C/I/R | delegate | exact model/alias | model class | reason` before dispatch; the reason identifies the winning routing rule and capability/cost fit.
 
 Load only the selected delegate skill immediately before preflight and dispatch. Preflight only that tool: confirm its executable/version, required authentication/configuration, and selected model or alias. Do not enumerate, probe, or authenticate unrelated delegate CLIs.
+
+## Mandatory cost-balance portfolio
+
+Classify Kimi K3, ChatGPT Sol, and GLM 5.2, including versioned names and aliases belonging to those families, as `premium`. Classify every other approved and verified model as `non-premium`. Match family names case-insensitively and record the resolved class; do not relabel an alias to bypass this rule.
+
+For `N` dispatched implementation tasks, assign at least `ceil(N / 2)` tasks to non-premium models. Count bounded implementation tasks that produce code, tests, migrations, configuration, or repository artifacts. Exclude orchestrator-only analysis, review, verification, blocked tasks, and cancelled tasks. Recompute the requirement whenever tasks are added, split, cancelled, blocked, or reassigned, and report both planned and completed ratios.
+
+Use the cheapest approved, verified model that is capable of each bounded task. Prefer non-premium models for mechanical and low-to-moderate work whose complexity, importance, and risk scores are all 3 or lower and which does not involve architecture, authentication, payments, security, privacy, concurrency, or destructive migrations. Preserve task coherence; never create trivial or artificial tasks to manipulate the ratio.
+
+The ratio is a cost constraint, not permission to weaken the quality floor. Keep high-capability routing for work that needs it. If approved and verified non-premium models cannot safely complete enough tasks, stop before dispatch and ask the user to change scope, enable capable non-premium models, or explicitly revise the portfolio requirement. An unavailable model, failed task, or unverified result does not satisfy the quota.
 
 ## Codex: orchestrator-owned automatic selection
 
 The orchestrator owns Codex model selection. Discover models through the installed Codex CLI/account's currently supported mechanism and verify the chosen model is usable; accepted flags and remembered model names are not a current catalog.
 
-Use a balanced, cost-effective verified model for routine bounded work. Automatically use the strongest capable verified model when any complexity, importance, or risk score is 4 or 5, or when work involves architecture, authentication, payments, security, privacy, concurrency, or destructive migrations. Pass the exact model with `codex-delegate`'s `--model`, and record it and the reason in the queue and dispatch record.
+Use a balanced, cost-effective verified model for routine bounded work and apply the portfolio rule above. Automatically use the strongest capable verified model when any complexity, importance, or risk score is 4 or 5, or when work involves architecture, authentication, payments, security, privacy, concurrency, or destructive migrations. Pass the exact model with `codex-delegate`'s `--model`, and record it, its model class, and the reason in the queue and dispatch record.
 
 ```bash
 node "<codex-delegate-skill>/scripts/relay.mjs" --brief brief.txt --model "<verified-model>" --cd /path/to/repo

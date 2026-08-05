@@ -1,4 +1,4 @@
 interface:
   display_name: "Feature Delivery"
-  short_description: "Analyze, split, route, and deliver features"
-  default_prompt: "Use $feature-delivery to turn these rough requirements into a verified, cost-routed feature delivery plan and implementation."
+  short_description: "Analyze, cost-balance, route, and deliver features"
+  default_prompt: "Use $feature-delivery to turn these rough requirements into a verified feature plan and implementation with balanced model cost and quality."
