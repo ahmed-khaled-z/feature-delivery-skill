@@ -1,6 +1,6 @@
 ---
 name: feature-delivery
-description: Analyze rough feature requests, resolve ambiguity, normalize requirements into English implementation specifications, decompose work into dependency-ordered tasks, route bounded work through approved delegates, and deliver through independent review, correction, verification, and safe landing. Use when the user asks to build, implement, start, continue, or plan a software feature with a prerequisite-first workflow.
+description: Analyze rough feature requests, resolve ambiguity, normalize requirements into English implementation specifications, decompose work into dependency-ordered tasks, cost-balance model allocation, route bounded work through approved delegates, and deliver through independent review, correction, verification, and safe landing. Use when the user asks to build, implement, start, continue, or plan a software feature with a prerequisite-first workflow.
 ---
 
 # Feature Delivery
@@ -49,8 +49,9 @@ Build a dependency-ordered task graph. Keep one active task by default. Each tas
 - Give exact target paths and leave-untouched surfaces. A fresh brief stays below 600 words unless safety requires more; split it otherwise.
 - Score complexity from mechanical (1) to architectural/concurrent/novel (5); importance from cosmetic/internal (1) to auth, money, security, privacy, or irreversible impact (5); and risk from trivial rollback (1) to severe loss, exploit, or production-integrity exposure (5).
 - Split for coherence before escalating capability. Do not inflate scores to choose a preferred model.
+- Apply the mandatory cost-balance portfolio rule in [delegation-routing.md](references/delegation-routing.md): at least `ceil(N / 2)` of the `N` dispatched implementation tasks must use models outside the Kimi K3, ChatGPT Sol, and GLM 5.2 model families. Do not split work artificially to satisfy the ratio.
 
-Present the concise queue before implementation. Every row must include: `task | C/I/R | delegate | exact model/alias | reason`.
+Present the concise queue before implementation. Every row must include: `task | C/I/R | delegate | exact model/alias | model class | reason`. Include the planned non-premium ratio and validate it before the first dispatch.
 
 ## 4. Route delegates and models
 
@@ -78,4 +79,4 @@ Never trust an implementer's report. Inspect changed existing tests first. Read 
 
 For a relevant UI gate, verify real flows, responsive layouts, RTL/LTR as applicable, keyboard access, and required states. Run installed guard skills when relevant. If a defect exists, send a concise English delta brief to the same implementer session first; do not fix it directly unless the user changes the workflow. Review again after correction. On a repeated failure, rescore, split where possible, and escalate only the remaining bounded work; record the failure reason.
 
-Land each verified task before dependent work. Carry confirmed constraints forward. After the queue, run a feature coherence check and all applicable gates. Sync only repository-authoritative docs and artifacts. Commit only when authorized; push, deploy, alter external tracking, or migrate remote data only with explicit authorization. Report delivered outcome, queue/model summary, decisions, verification, applicable-gate results, commit/deployment state, and blockers separately.
+Land each verified task before dependent work. Carry confirmed constraints forward. Recompute the cost-balance ratio whenever a task is added, split, cancelled, blocked, or reassigned, and validate the final ratio over completed implementation tasks. After the queue, run a feature coherence check and all applicable gates. Sync only repository-authoritative docs and artifacts. Commit only when authorized; push, deploy, alter external tracking, or migrate remote data only with explicit authorization. Report delivered outcome, queue/model summary, final non-premium ratio, decisions, verification, applicable-gate results, commit/deployment state, and blockers separately.
