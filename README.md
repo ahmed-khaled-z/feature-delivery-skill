@@ -1,6 +1,6 @@
 # Feature Delivery Skill
 
-`feature-delivery` turns rough software feature requests into repository-grounded, prerequisite-first delivery work. It resolves blocking ambiguity, creates a canonical specification, decomposes the feature into bounded tasks, routes each task through an approved delegate/model, and independently reviews and verifies the result before landing.
+`feature-delivery` turns natural-language software requests into repository-grounded T0–T4 workflows. Claude is the default orchestrator; it classifies the task, chooses the cheapest workflow that preserves the quality floor, coordinates specialized lanes, and performs final acceptance.
 
 ## What it enforces
 
@@ -8,6 +8,8 @@
 - Missing prerequisites stop planning and implementation.
 - Architecture and schema decisions are never silently redesigned.
 - Tasks stay small, dependency-ordered, and independently verifiable.
+- T0/T1 stay fast; T3/T4 receive bounded adversarial architecture review.
+- Kimi explores and implements, Codex challenges and reviews, OpenCode tests and handles low-cost work, GLM debugs difficult failures through OpenCode, and Antigravity owns visual work.
 - Delegate reports are treated as claims and re-verified by the orchestrator.
 - UI and API synchronization gates run only when the repository requires them.
 - Commits, pushes, deployments, and external mutations follow explicit authorization.
@@ -68,11 +70,13 @@ cp -R feature-delivery-skill/feature-delivery-setup "$setup_dest"
 
 ## Delegate prerequisites
 
-The skill coordinates implementation; it does not bundle delegate CLIs. Install and authenticate at least one compatible delegate skill and its CLI:
+The skill coordinates implementation; it does not bundle `delegate-setup`, delegate skills, or their CLIs. The intended fleet uses:
 
+- `delegate-setup` for global/project `delegate-fleet.v1` configuration.
 - `codex-delegate` for OpenAI Codex CLI.
 - `opencode-delegate` for OpenCode CLI.
 - `kimi-delegate` for Kimi Code CLI.
+- `agy-delegate` for Antigravity CLI.
 
 Only the selected delegate is loaded and checked for a task.
 
@@ -84,58 +88,62 @@ Installation does not prompt for delegate choices because the Skills CLI only in
 $feature-delivery-setup
 ```
 
-The setup command discovers installed Codex, OpenCode, and Kimi delegate tools, asks which ones you authorize, and lets you save the result for the current conversation, the current project's nearest `AGENTS.md`, or the global default at `~/.config/feature-delivery/config.json`. It previews and confirms any filesystem write. An installed skill or CLI is never treated as permission.
+`feature-delivery-setup` is a compatibility entrypoint that invokes `$delegate-setup`. It configures the global or project `delegate-fleet.v1` map only after showing the exact JSON and receiving approval. It does not write `AGENTS.md` or the obsolete `~/.config/feature-delivery/config.json`.
 
 Delegate-specific behavior:
 
-- **Codex:** choose Codex once; the orchestrator automatically selects a verified model based on each task's complexity, importance, and risk.
-- **OpenCode:** after enabling OpenCode, setup runs `opencode models` read-only and displays the exact configured model identifiers. You choose the model allowlist; discovery alone does not grant authorization.
-- **Kimi:** the skill uses the configured/default Kimi alias and does not invent a replacement model name.
+- **Kimi:** `explore`, `fast`, and `feature` lanes.
+- **OpenCode:** `tests`, `debug`, and `docs`; GLM-5.2 runs through the Z.AI Coding Plan on `debug`.
+- **Codex:** `architecture` and `review`; T3/T4 architecture critique requires verified GPT-5.6 Sol with high effort or an explicit user override.
+- **Antigravity:** `ui` and `assets`.
 
-You can skip setup for a run by stating the policy in your request:
+Manual workflow or lane overrides remain available:
 
 ```text
-Use $feature-delivery to implement organization invitations. Enable Codex and Kimi for this run. Codex selects its model automatically; Kimi uses its configured alias.
+Use $feature-delivery to implement organization invitations, but run the T3 workflow and use my project review lane.
 ```
 
-`feature-delivery` resolves policy in this order: the current request, the nearest `AGENTS.md`, then the global config. If none exists for implementation work, it asks you to run `$feature-delivery-setup` and pauses. A repository rule that only says what to do *if* a delegate is selected does not enable that delegate.
+Manual overrides cannot bypass repository or safety constraints. The effective fleet remains the lane-binding source of truth; the skill owns classification, sequencing, escalation, and stop conditions.
 
-## Configure a project
+## Task levels and execution
 
-Put project-specific rules in the repository's nearest `AGENTS.md`, not inside this global skill. A minimal policy can look like:
+| Level | Typical work | Execution sequence |
+| --- | --- | --- |
+| T0 | Typo, spacing, rename, tiny isolated adjustment | Claude → Kimi fast → targeted validation |
+| T1 | Small isolated bug or straightforward behavior | Claude → Kimi → relevant checks/fix → affected docs |
+| T2 | Normal contained feature/integration | Kimi explore → Claude plan → Kimi implement → OpenCode tests → optional Antigravity → Codex review → Kimi fixes → Claude acceptance → affected docs |
+| T3 | Cross-module, architecture, major data/state flow, substantial regression risk | Full workflow with bounded Claude–Codex architecture debate |
+| T4 | Auth, payments, security, migrations, destructive/sensitive/core architecture | Full workflow with maximum verification |
+
+T3/T4 allow one initial Codex critique and one final challenge. Claude labels each objection `ACCEPT`, `PARTIALLY ACCEPT`, or `REJECT`, then makes the final decision; agreement is not required.
+
+The classifier uses the highest applicable level based on blast radius, coupling, novelty, reversibility, data/security sensitivity, production impact, and verification burden. Critical triggers always force T4 even for a small diff.
+
+Dynamic escalation is supported:
+
+- T0/T1 → T2 when shared or coupled behavior appears.
+- T2 → T3 when architectural or cross-module complexity appears.
+- Any level → T4 when a critical trigger is discovered.
+- Any implementation → GLM debug when a failure survives one evidence-based correction/rerun or cannot be localized from standard inspection and output.
+- Any level → Antigravity when visual/UI/assets work becomes necessary.
+
+## `delegate-fleet.v1` limitation
+
+The current schema stores only lane names, implementers, and optional dials such as model, effort/variant, timeout, and read-only mode. It cannot encode classification, workflow order, conditional stages, escalation, debate rounds, reviewer independence, Claude's decision authority, or acceptance criteria. Those rules live in `feature-delivery` and must be enforced by the active orchestrator.
+
+## Configure repository constraints
+
+Keep source-of-truth, verification, and safety rules in the nearest `AGENTS.md`; keep delegate bindings in `delegate-fleet.v1`. For example:
 
 ```md
 # Feature delivery policy
 
-## Source of truth
-
 - Architecture: docs/architecture.md
 - Schema: docs/database-erd.md
-
-## Verification
-
-- npm run lint
-- npm run typecheck
-- npm test
-- npm run build
-
-## Delegation
-
-- Codex: enabled; model selection is automatic per task.
-- OpenCode: enabled only with these user-approved models:
-  - provider/model-a
-  - provider/model-b
-- Kimi: use the configured/default alias.
-
-## Landing
-
+- Verification: npm run lint; npm run typecheck; npm test; npm run build
 - Do not change confirmed architecture or schema decisions without approval.
 - Do not deploy or run remote migrations without explicit authorization.
 ```
-
-For OpenCode, the list is an allowlist: `opencode models` discovers entries but does not authorize spending. The orchestrator chooses the cheapest capable model only from the human-approved set.
-
-For Codex, the orchestrator selects a verified available model from the current Codex environment. Routine bounded work receives a balanced model; tasks with a complexity, importance, or risk score of 4–5—or work involving architecture, authentication, payments, security, privacy, concurrency, or destructive migrations—receive the strongest capable model.
 
 ## Usage
 
@@ -163,9 +171,9 @@ The skill will:
 2. Stop if a required foundation, migration, credential, or earlier delivery step is missing.
 3. Ask only blocking questions that cannot be answered from repository evidence.
 4. Produce an English implementation specification while discussing it in the user's language.
-5. Present a task queue containing `task | C/I/R | delegate | exact model/alias | reason`.
-6. Dispatch one bounded task at a time, review its diff, request corrections, and run the real repository gates.
-7. Synchronize only authoritative UI/API/docs artifacts and land only authorized changes.
+5. Classify the request as T0–T4 and explain the evidence briefly.
+6. Execute only the stages justified by that level, with dynamic escalation when needed.
+7. Synchronize only affected authoritative UI/API/docs artifacts and land only authorized changes.
 
 ## Repository layout
 
@@ -177,6 +185,8 @@ feature-delivery/
 └── references/
     ├── api-synchronization.md
     ├── delegation-routing.md
+    ├── orchestration-workflows.md
+    ├── task-classification.md
     ├── task-brief-template.md
     └── ui-delivery.md
 feature-delivery-setup/

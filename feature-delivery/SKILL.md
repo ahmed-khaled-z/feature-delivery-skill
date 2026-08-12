@@ -1,82 +1,61 @@
 ---
 name: feature-delivery
-description: Analyze rough feature requests, resolve ambiguity, normalize requirements into English implementation specifications, decompose work into dependency-ordered tasks, cost-balance model allocation, route bounded work through approved delegates, and deliver through independent review, correction, verification, and safe landing. Use when the user asks to build, implement, start, continue, or plan a software feature with a prerequisite-first workflow.
+description: Classify software work from T0 trivial through T4 critical, then orchestrate repository-grounded planning, specialized delegation, adversarial architecture review, implementation, testing, visual work, debugging, documentation, and acceptance with dynamic escalation. Use when the user asks to build, implement, fix, refactor, continue, or plan software work and wants quality, speed, and cost balanced automatically.
 ---
 
 # Feature Delivery
 
-Deliver one feature without skipping foundations, inventing architecture, overfilling an implementer context, or trusting delegated work blindly. Repository and user rules are authoritative over this skill.
+Claude is the default primary orchestrator: understand the natural-language request, classify it, choose the workflow, make architecture decisions, and perform final acceptance. Do not ask the user to select lanes for ordinary work. Honor an explicit workflow, tier, lane, delegate, model, or orchestrator override when it does not violate repository or safety constraints. When another host explicitly invokes this skill, treat that as a manual orchestrator override; do not pretend that host is Claude.
 
-For an implementation or delegation request, resolve delegate authorization before feature analysis. Use explicit policy from the current request, then the nearest `AGENTS.md`, then `~/.config/feature-delivery/config.json`. A conditional rule such as “when delegating UI to OpenCode” does not enable that delegate. If no source explicitly enables at least one delegate, stop and ask the user to run `$feature-delivery-setup`; do not silently implement directly. Planning-only requests may proceed with an unassigned plan.
+Optimize quality, speed, and cost together. Specialize agents instead of paying multiple premium agents to implement the same behavior.
 
-## 1. Analyze and ground the request
+## 1. Ground and gate
 
-Accept rough requirements in any language. Preserve the original request and its language for discussion. Extract outcome; actors; inputs, outputs, rules, states, and edge cases; scope and exclusions; acceptance signals; labeled inferences; and unknowns that could change behavior, architecture, data, UX, cost, security, or scope.
+Preserve the request and discuss it in the user's language. Before planning or delegation, read the nearest `AGENTS.md`; repository status and relevant diff; named architecture, ERD, product, design, status, and execution docs; and relevant code, tests, migrations, configuration, and deployment setup. Repository and user rules are authoritative. Preserve unrelated changes and confirmed architecture/schema decisions.
 
-Before planning, read the nearest `AGENTS.md`; branch, status, recent commits, and relevant diff; architecture, ERD, status, product, design, and execution docs named by repository rules; relevant code, tests, scripts, migrations, config, and deployment setup. Preserve unrelated changes. Never rewrite confirmed architecture or schema decisions without explicit approval.
+Identify required earlier delivery steps, migrations, APIs, config, credentials, infrastructure, UI foundations, tests, fixtures, observability, security, and deployment dependencies. If a prerequisite is missing, stop before planning or delegation and state what is missing, why it is required, the correct order, and the needed decision or access. Ask only blocking ambiguity questions; state safe reversible assumptions.
 
-Prefer repository evidence over inference. Do not translate the request literally or delegate it before the next two gates pass.
+## 2. Classify before dispatch
 
-## 2. Run the prerequisite and ambiguity gates
+Read [task-classification.md](references/task-classification.md). Assign the highest applicable T0–T4 level using blast radius, coupling, novelty, reversibility, data/security sensitivity, and verification burden—not estimated file count alone. Record the level and a one-sentence evidence-based reason. Classification is provisional until repository grounding finishes.
 
-Identify earlier delivery steps; schema/migrations; APIs/contracts/clients; config, credentials, providers, and infrastructure; UI foundations; test, fixture, observability, security, and deployment needs. Compare each with repository evidence.
+Upgrade immediately when execution reveals higher risk or complexity. Re-run the prerequisite gate and switch to the stronger workflow from the next safe boundary. Never use a user override to bypass required security, data, migration, or architecture safeguards.
 
-If any prerequisite is missing, stop before planning or delegation. State what is missing, why it is required, the correct execution order, and any needed decision, approval, credential, or external confirmation. Do not silently add scope or invent a workaround. Resume only after the prerequisite is complete or scope changes explicitly.
+## 3. Resolve the effective fleet
 
-Classify remaining unknowns as **blocking** when answers could change behavior, architecture, data, UX, cost, security, or scope, otherwise **non-blocking** only if a safe, reversible default fits repository truth. State non-blocking assumptions. Ask the smallest high-leverage question in the user's language for a blocking ambiguity and pause.
+Before the first planned dispatch, use the installed `delegate-setup` helper to load the effective `delegate-fleet.v1` map for the repository. Do not rewrite bindings during delivery. Read [delegation-routing.md](references/delegation-routing.md) to map workflow responsibilities onto the current lanes and preflight only a lane immediately before using it.
 
-Once both gates pass, create the canonical English specification:
+If a required lane is absent, unavailable, unauthenticated, or bound incompatibly, use an explicitly approved equivalent lane if present; otherwise stop or omit only an optional stage. Never infer authorization from an installed CLI, silently change the fleet, or silently replace a required independent reviewer with the implementer.
+
+## 4. Specify and execute the tier workflow
+
+Create a compact canonical English specification:
 
 ```text
 Outcome:
 Users and behavior:
-In scope:
-Out of scope:
+In scope / out of scope:
 Repository evidence and constraints:
 Acceptance criteria:
 Assumptions and resolved decisions:
 Verification expectations:
 ```
 
-Keep user-facing explanations in the user's language unless requested otherwise.
+Read [orchestration-workflows.md](references/orchestration-workflows.md) and execute the selected T0–T4 sequence. Present only the level, reason, material stages, and meaningful conditional gates; do not expose internal overhead for tiny work. Keep one implementation owner per surface. Parallelize only independent work with no shared files or decisions.
 
-## 3. Decompose and score
+Immediately before each dispatch, read [task-brief-template.md](references/task-brief-template.md). Give the delegate one bounded English brief with exact scope, acceptance criteria, repository constraints, and real verification commands. The orchestrator reviews and lands; delegates do not commit, push, deploy, or run remote migrations unless separately authorized.
 
-Build a dependency-ordered task graph. Keep one active task by default. Each task has an ID, one concrete outcome, dependencies, exact scope, acceptance criteria, verification artifact, 1–5 complexity/importance/risk scores, delegate, exact model or alias, and selection reason.
+## 5. Apply conditional gates
 
-- One task means one independently verifiable behavior or artifact and one review boundary. Split broad screens into coherent components and order foundations/contracts before consumers.
-- Keep the repository buildable after every landed task. Parallelize only tasks with no shared decisions or files.
-- Give exact target paths and leave-untouched surfaces. A fresh brief stays below 600 words unless safety requires more; split it otherwise.
-- Score complexity from mechanical (1) to architectural/concurrent/novel (5); importance from cosmetic/internal (1) to auth, money, security, privacy, or irreversible impact (5); and risk from trivial rollback (1) to severe loss, exploit, or production-integrity exposure (5).
-- Split for coherence before escalating capability. Do not inflate scores to choose a preferred model.
-- Apply the mandatory cost-balance portfolio rule in [delegation-routing.md](references/delegation-routing.md): at least `ceil(N / 2)` of the `N` dispatched implementation tasks must use models outside the Kimi K3, ChatGPT Sol, and GLM 5.2 model families. Do not split work artificially to satisfy the ratio.
+- For material UI composition, responsive behavior, visual QA, image, icon, illustration, or asset work, read [ui-delivery.md](references/ui-delivery.md). Use the visual lane without duplicating the same implementation in Kimi. Keep a tiny isolated T0 UI adjustment on `fast` unless repository policy or discovered visual risk requires escalation.
+- For API changes, read [api-synchronization.md](references/api-synchronization.md) only when the repository identifies an authoritative API artifact.
+- Invoke difficult debugging only after ordinary diagnosis or checks fail, not preemptively.
+- Update documentation only after implementation and verification are stable, and only when observable behavior, setup, API, environment variables, architecture notes, changelog, or useful comments changed.
 
-Present the concise queue before implementation. Every row must include: `task | C/I/R | delegate | exact model/alias | model class | reason`. Include the planned non-premium ratio and validate it before the first dispatch.
+## 6. Review, correct, verify, and land
 
-## 4. Route delegates and models
+Treat every delegate report as an unverified claim. Inspect changed tests and the full diff for scope creep, architecture drift, weakened coverage, regressions, swallowed errors, security/performance/concurrency issues, speculative abstractions, duplication, and unverified APIs. Re-run relevant repository checks yourself.
 
-Use the policy resolved before analysis. Precedence is current request, nearest `AGENTS.md`, then the global config. Installed skills or CLIs are availability evidence, not approval. A conversation-only selection expires with that conversation.
+Return validated defects to the responsible implementer first. Do not have another premium agent reimplement the same feature. If failures expose higher risk, escalate the tier; if runtime/build/test diagnosis becomes genuinely difficult, invoke the debug lane. After correction, re-review the affected surface.
 
-If OpenCode is enabled without an explicit allowed-model set, ask for that allowlist before routing any task to OpenCode. Codex needs no model question because the orchestrator selects its model from verified available models based on the task. Kimi keeps its configured alias. Never infer approval from `opencode models`, silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model, or authenticate during discovery.
-
-Load only the selected delegate skill immediately before preflight and dispatch. When selecting a delegate or model, read [delegation-routing.md](references/delegation-routing.md) for the full ownership, precedence, model-selection, alias, and selected-tool preflight rules.
-
-## 5. Apply repository-driven conditional gates
-
-Determine applicable UI, API-artifact, security, migration, and documentation gates from repository policy and the canonical specification. Mark an inapplicable gate explicitly; do not add a project-specific workflow by default.
-
-- For user-facing UI/UX work, read [ui-delivery.md](references/ui-delivery.md) only when the repository makes that gate relevant.
-- For API changes, read [api-synchronization.md](references/api-synchronization.md) only when the repository identifies an authoritative API artifact such as Postman, OpenAPI, or Bruno.
-- Apply other repository-required gates only when triggered. Never apply remote migrations, deploy, push, publish, or mutate an external system without explicit authorization; unavailable required access is blocked, not passed.
-
-## 6. Brief, preflight, and delegate
-
-Preflight only the selected tool and its required authentication/configuration; do not probe unrelated CLIs. Immediately before writing or dispatching a delegated task, read [task-brief-template.md](references/task-brief-template.md) and produce one compact English XML brief for the current task. The implementer edits; the orchestrator reviews and lands.
-
-## 7. Review, correct, verify, and land
-
-Never trust an implementer's report. Inspect changed existing tests first. Read the full diff against the brief for scope creep, missing behavior, architecture drift, weakened coverage, unapproved contract changes, swallowed errors, speculative abstractions, duplication, and unverified APIs. Re-run relevant repository gates yourself. Round-trip schema changes against a scratch DB; never apply remote migrations without authorization.
-
-For a relevant UI gate, verify real flows, responsive layouts, RTL/LTR as applicable, keyboard access, and required states. Run installed guard skills when relevant. If a defect exists, send a concise English delta brief to the same implementer session first; do not fix it directly unless the user changes the workflow. Review again after correction. On a repeated failure, rescore, split where possible, and escalate only the remaining bounded work; record the failure reason.
-
-Land each verified task before dependent work. Carry confirmed constraints forward. Recompute the cost-balance ratio whenever a task is added, split, cancelled, blocked, or reassigned, and validate the final ratio over completed implementation tasks. After the queue, run a feature coherence check and all applicable gates. Sync only repository-authoritative docs and artifacts. Commit only when authorized; push, deploy, alter external tracking, or migrate remote data only with explicit authorization. Report delivered outcome, queue/model summary, final non-premium ratio, decisions, verification, applicable-gate results, commit/deployment state, and blockers separately.
+Claude performs the final acceptance check against the authoritative plan and criteria. Land only verified work. Commit only when authorized; push, deploy, alter external tracking, or mutate remote data only with explicit authorization. Report the final tier, any escalation, lane/model summary, delivered outcome, verification, affected documentation, landing state, blockers, and any `delegate-fleet.v1` limitation encountered.

@@ -1,56 +1,65 @@
-# Delegation routing and selected-tool preflight
+# Effective fleet routing and preflight
 
-Use this reference only after the prerequisite and ambiguity gates have passed and the current task has been scored.
+`delegate-fleet.v1` is the source of truth for lane bindings and relay dials. It does not decide task tier or workflow order; this skill does.
 
-## First-use delegate policy gate
+## Load without mutation
 
-Resolve delegate authorization before feature analysis for any implementation or delegation request:
-
-1. Use delegates explicitly enabled by the current user request.
-2. Otherwise use delegates explicitly enabled by the nearest `AGENTS.md`.
-3. Otherwise use `~/.config/feature-delivery/config.json` when it exists, has `version: 1`, and explicitly enables at least one delegate.
-4. If no valid policy exists, stop and ask the user to run `$feature-delivery-setup`. Do not silently switch to direct implementation.
-
-Installed skills, installed CLIs, and conditional guidance that merely mentions a delegate are not authorization. Planning-only requests can complete analysis, prerequisite checks, specification, and a delegate-unassigned plan without a policy.
-
-When OpenCode is selected and neither the request nor repository policy supplies its allowed-model set, ask for the allowlist before selecting or preflighting OpenCode. This can be a second concise question after delegate selection when necessary. Codex does not require a model allowlist question; Kimi retains its configured alias.
-
-## Routing precedence
-
-1. Honor an explicit user delegate/model choice first unless it conflicts with non-negotiable repository safety, architecture, security, or cost policy; stop and ask on conflict.
-2. Apply repository routing and allowed-model policy.
-3. Choose only from user- or repository-approved tools that are available and authenticated in the current environment.
-
-Never silently substitute an unavailable, unauthenticated, disallowed, billed, or weaker tool/model. Record `task | C/I/R | delegate | exact model/alias | model class | reason` before dispatch; the reason identifies the winning routing rule and capability/cost fit.
-
-Load only the selected delegate skill immediately before preflight and dispatch. Preflight only that tool: confirm its executable/version, required authentication/configuration, and selected model or alias. Do not enumerate, probe, or authenticate unrelated delegate CLIs.
-
-## Mandatory cost-balance portfolio
-
-Classify Kimi K3, ChatGPT Sol, and GLM 5.2, including versioned names and aliases belonging to those families, as `premium`. Classify every other approved and verified model as `non-premium`. Match family names case-insensitively and record the resolved class; do not relabel an alias to bypass this rule.
-
-For `N` dispatched implementation tasks, assign at least `ceil(N / 2)` tasks to non-premium models. Count bounded implementation tasks that produce code, tests, migrations, configuration, or repository artifacts. Exclude orchestrator-only analysis, review, verification, blocked tasks, and cancelled tasks. Recompute the requirement whenever tasks are added, split, cancelled, blocked, or reassigned, and report both planned and completed ratios.
-
-Use the cheapest approved, verified model that is capable of each bounded task. Prefer non-premium models for mechanical and low-to-moderate work whose complexity, importance, and risk scores are all 3 or lower and which does not involve architecture, authentication, payments, security, privacy, concurrency, or destructive migrations. Preserve task coherence; never create trivial or artificial tasks to manipulate the ratio.
-
-The ratio is a cost constraint, not permission to weaken the quality floor. Keep high-capability routing for work that needs it. If approved and verified non-premium models cannot safely complete enough tasks, stop before dispatch and ask the user to change scope, enable capable non-premium models, or explicitly revise the portfolio requirement. An unavailable model, failed task, or unverified result does not satisfy the quota.
-
-## Codex: orchestrator-owned automatic selection
-
-The orchestrator owns Codex model selection. Discover models through the installed Codex CLI/account's currently supported mechanism and verify the chosen model is usable; accepted flags and remembered model names are not a current catalog.
-
-Use a balanced, cost-effective verified model for routine bounded work and apply the portfolio rule above. Automatically use the strongest capable verified model when any complexity, importance, or risk score is 4 or 5, or when work involves architecture, authentication, payments, security, privacy, concurrency, or destructive migrations. Pass the exact model with `codex-delegate`'s `--model`, and record it, its model class, and the reason in the queue and dispatch record.
+Locate the installed `delegate-setup` skill and run its read-only loader for the target repository:
 
 ```bash
-node "<codex-delegate-skill>/scripts/relay.mjs" --brief brief.txt --model "<verified-model>" --cd /path/to/repo
+node "<delegate-setup-skill>/scripts/config.mjs" load --cwd "/path/to/repo"
 ```
 
-If discovery cannot verify a candidate, choose another approved available delegate/model or ask for a routing decision. Never invent a model or silently fall back to an implicit default.
+Use the effective merged lanes. Project lanes replace same-named global lanes. If project config exists but is untrusted, do not dispatch it; ask the user to review and approve it through `$delegate-setup`. Never edit fleet files during feature delivery.
 
-## OpenCode: human-owned allowlist
+## Expected responsibility lanes
 
-The human owns OpenCode eligibility. Before selecting or preflighting OpenCode, find an explicit allowed-model set in the resolved request, repository, or global policy. `opencode models` is discovery only and never authorization. Within the allowed set, the orchestrator selects the cheapest capable model and records it with the reason. If no allowed set exists, stop and ask; never infer or silently substitute a model.
+| Responsibility | Preferred lane | Expected implementer |
+| --- | --- | --- |
+| Repository evidence | `explore` | Kimi |
+| Tiny/fast implementation | `fast` | Kimi |
+| Main implementation and fixes | `feature` | Kimi |
+| Tests and bounded mechanical work | `tests` | OpenCode |
+| Difficult debugging | `debug` | OpenCode with Z.AI GLM-5.2 model |
+| UI/responsive/visual QA | `ui` | Antigravity (`agy`) |
+| Images/icons/illustrations/assets | `assets` | Antigravity (`agy`) |
+| Independent implementation review | `review` | Codex |
+| Adversarial architecture critique | `architecture` | Codex GPT-5.6 Sol, high effort |
+| Post-stability documentation | `docs` | OpenCode capable free model |
 
-## Kimi: configured alias policy
+These are responsibility contracts, not permission to rewrite the fleet. Manual user lane/model overrides win when safe. If a preferred lane is absent, inspect the effective map for an explicit compatible equivalent. Ask before substituting when independence, cost, or capability would change.
 
-When Kimi wins the routing order, use and verify its configured/default alias behavior under its delegate skill. Do not invent, replace, or convert the alias into an unapproved fixed model name. Record the exact configured alias used, or `configured default alias` when that is all the tool exposes, and the reason.
+## Dispatch rules
+
+Load only the selected `*-delegate` skill immediately before use. Preflight that lane's executable, authentication, model, and dials; do not probe unrelated tools. Dispatch with the configured lane so the relay resolves and validates its own binding:
+
+```bash
+node "<delegate-skill>/scripts/relay.mjs" --brief brief.txt --lane "<lane>" --cd "/path/to/repo"
+```
+
+Do not invent model identifiers or bypass an unavailable/untrusted lane with an implicit CLI default. Preserve these ownership rules:
+
+- Kimi is the default explorer, implementer, and fixer. Prefer its standalone subscription/configured alias rather than routing Kimi through OpenCode.
+- Codex is an independent challenger/reviewer, not the default implementation worker. T3/T4 architecture critique requires verified `gpt-5.6-sol` with high effort; stop for an explicit override if the active binding cannot provide it.
+- OpenCode owns tests, bounded low-cost work, difficult GLM debugging, and free-model documentation according to its lane binding.
+- GLM-5.2 runs through OpenCode/Z.AI Coding Plan; never treat it as a standalone CLI.
+- Antigravity owns visual/UI/assets work when applicable. Prefer existing suitable assets over generating replacements.
+- Claude remains outside the fleet as the top-level orchestrator and decision-maker.
+
+## Failure and escalation
+
+Return implementation or review findings to the same responsible implementer. Do not dispatch multiple premium agents to implement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke the debug lane when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. A failed or unavailable optional docs/visual lane does not authorize undocumented behavior or unverified visuals; report the limitation and complete only what can be accepted safely.
+
+## `delegate-fleet.v1` limitations
+
+The schema stores named lane → implementer plus optional model/effort/variant/timeout/read-only dials. It cannot encode:
+
+- T0–T4 classification or detection rules;
+- workflow sequencing, conditions, escalation, or stop criteria;
+- Claude's orchestrator role or final decision authority;
+- architecture-debate rounds and objection dispositions;
+- independence requirements between implementation and review;
+- “docs only if affected” or “debug only if stuck” semantics;
+- shared state, outputs, or acceptance criteria between stages.
+
+Those behaviors therefore live in `feature-delivery` instructions and are enforced by the active orchestrator. Fleet validation can prove a lane binding is syntactically valid and trusted; it cannot prove the workflow was followed.
