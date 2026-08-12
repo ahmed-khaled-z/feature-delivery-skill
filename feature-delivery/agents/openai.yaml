@@ -1,4 +1,4 @@
 interface:
   display_name: "Feature Delivery"
-  short_description: "Analyze, cost-balance, route, and deliver features"
-  default_prompt: "Use $feature-delivery to turn these rough requirements into a verified feature plan and implementation with balanced model cost and quality."
+  short_description: "Classify, orchestrate, and verify feature delivery"
+  default_prompt: "Use $feature-delivery to classify this request from T0 to T4 and run the appropriate verified delivery workflow."
