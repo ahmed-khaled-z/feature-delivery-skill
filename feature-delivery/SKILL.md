@@ -47,7 +47,7 @@ Immediately before each dispatch, read [task-brief-template.md](references/task-
 
 ## 5. Apply conditional gates
 
-- For material UI composition, responsive behavior, visual QA, image, icon, illustration, or asset work, read [ui-delivery.md](references/ui-delivery.md). Use the visual lane without duplicating the same implementation in Kimi. Keep a tiny isolated T0 UI adjustment on `fast` unless repository policy or discovered visual risk requires escalation.
+- For material UI composition, responsive behavior, visual QA, image, icon, illustration, or asset work, read [ui-delivery.md](references/ui-delivery.md). Use the visual lane without duplicating the same surface through `fast` or `feature`. Keep a tiny isolated T0 UI adjustment on `fast` unless repository policy or discovered visual risk requires escalation.
 - For API changes, read [api-synchronization.md](references/api-synchronization.md) only when the repository identifies an authoritative API artifact.
 - Invoke difficult debugging only after ordinary diagnosis or checks fail, not preemptively.
 - Update documentation only after implementation and verification are stable, and only when observable behavior, setup, API, environment variables, architecture notes, changelog, or useful comments changed.
@@ -56,6 +56,6 @@ Immediately before each dispatch, read [task-brief-template.md](references/task-
 
 Treat every delegate report as an unverified claim. Inspect changed tests and the full diff for scope creep, architecture drift, weakened coverage, regressions, swallowed errors, security/performance/concurrency issues, speculative abstractions, duplication, and unverified APIs. Re-run relevant repository checks yourself.
 
-Return validated defects to the responsible implementer first. Do not have another premium agent reimplement the same feature. If failures expose higher risk, escalate the tier; if runtime/build/test diagnosis becomes genuinely difficult, invoke the debug lane. After correction, re-review the affected surface.
+Return ordinary implementation or test failures to the lane that produced them. After an independent Codex review, send only findings that Claude validates to Kimi through `fix`; then have Codex re-review the corrected diff before acceptance. Do not ask Kimi to reimplement the feature or fix unvalidated reviewer suggestions. If failures expose higher risk, escalate the tier; if runtime/build/test diagnosis becomes genuinely difficult, invoke `debug`.
 
 Claude performs the final acceptance check against the authoritative plan and criteria. Land only verified work. Commit only when authorized; push, deploy, alter external tracking, or mutate remote data only with explicit authorization. Report the final tier, any escalation, lane/model summary, delivered outcome, verification, affected documentation, landing state, blockers, and any `delegate-fleet.v1` limitation encountered.

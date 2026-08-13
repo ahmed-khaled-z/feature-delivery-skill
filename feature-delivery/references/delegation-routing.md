@@ -17,9 +17,10 @@ Use the effective merged lanes. Project lanes replace same-named global lanes. I
 | Responsibility | Preferred lane | Expected implementer |
 | --- | --- | --- |
 | Repository evidence | `explore` | Kimi |
-| Tiny/fast implementation | `fast` | Kimi |
-| Main implementation and fixes | `feature` | Kimi |
-| Tests and bounded mechanical work | `tests` | OpenCode |
+| Tiny/fast implementation | `fast` | OpenCode + Z.AI GLM-5.2 |
+| Main nonvisual implementation | `feature` | OpenCode + Z.AI GLM-5.2 |
+| Tests | `tests` | OpenCode Go configured test model |
+| Validated Codex review fixes | `fix` | Kimi standalone |
 | Difficult debugging | `debug` | OpenCode with Z.AI GLM-5.2 model |
 | UI/responsive/visual QA | `ui` | Antigravity (`agy`) |
 | Images/icons/illustrations/assets | `assets` | Antigravity (`agy`) |
@@ -39,16 +40,16 @@ node "<delegate-skill>/scripts/relay.mjs" --brief brief.txt --lane "<lane>" --cd
 
 Do not invent model identifiers or bypass an unavailable/untrusted lane with an implicit CLI default. Preserve these ownership rules:
 
-- Kimi is the default explorer, implementer, and fixer. Prefer its standalone subscription/configured alias rather than routing Kimi through OpenCode.
+- Kimi explores and fixes only Claude-validated Codex review findings through `fix`. Prefer its standalone subscription/configured alias; do not use Kimi for the initial implementation or tests.
 - Codex is an independent challenger/reviewer, not the default implementation worker. T3/T4 architecture critique requires verified `gpt-5.6-sol` with high effort; stop for an explicit override if the active binding cannot provide it.
-- OpenCode owns tests, bounded low-cost work, difficult GLM debugging, and free-model documentation according to its lane binding.
-- GLM-5.2 runs through OpenCode/Z.AI Coding Plan; never treat it as a standalone CLI.
+- GLM-5.2 through OpenCode/Z.AI Coding Plan owns `fast`, `feature`, and difficult `debug` work; never treat GLM as a standalone CLI.
+- OpenCode Go owns `tests`, and the configured free OpenCode model owns documentation.
 - Antigravity owns visual/UI/assets work when applicable. Prefer existing suitable assets over generating replacements.
 - Claude remains outside the fleet as the top-level orchestrator and decision-maker.
 
 ## Failure and escalation
 
-Return implementation or review findings to the same responsible implementer. Do not dispatch multiple premium agents to implement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke the debug lane when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. A failed or unavailable optional docs/visual lane does not authorize undocumented behavior or unverified visuals; report the limitation and complete only what can be accepted safely.
+Return ordinary implementation/test failures to their producing lane. Send only Claude-validated Codex findings to Kimi through `fix`, then return the corrected diff to Codex for re-review. Do not dispatch multiple agents to reimplement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke `debug` when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. A failed or unavailable optional docs/visual lane does not authorize undocumented behavior or unverified visuals; report the limitation and complete only what can be accepted safely.
 
 ## `delegate-fleet.v1` limitations
 
