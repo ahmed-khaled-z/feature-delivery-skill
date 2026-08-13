@@ -9,7 +9,7 @@
 - Architecture and schema decisions are never silently redesigned.
 - Tasks stay small, dependency-ordered, and independently verifiable.
 - T0/T1 stay fast; T3/T4 receive bounded adversarial architecture review.
-- Kimi explores and implements, Codex challenges and reviews, OpenCode tests and handles low-cost work, GLM debugs difficult failures through OpenCode, and Antigravity owns visual work.
+- Kimi explores and fixes validated review findings, GLM implements through OpenCode/Z.AI Coding Plan, OpenCode Go writes tests, Codex challenges and reviews, and Antigravity owns visual work.
 - Delegate reports are treated as claims and re-verified by the orchestrator.
 - UI and API synchronization gates run only when the repository requires them.
 - Commits, pushes, deployments, and external mutations follow explicit authorization.
@@ -92,8 +92,9 @@ $feature-delivery-setup
 
 Delegate-specific behavior:
 
-- **Kimi:** `explore`, `fast`, and `feature` lanes.
-- **OpenCode:** `tests`, `debug`, and `docs`; GLM-5.2 runs through the Z.AI Coding Plan on `debug`.
+- **Kimi:** `explore` and `fix`; `fix` receives only Claude-validated Codex findings.
+- **OpenCode/Z.AI:** GLM-5.2 on `fast`, `feature`, and `debug`.
+- **OpenCode Go:** `tests` using the configured test model.
 - **Codex:** `architecture` and `review`; T3/T4 architecture critique requires verified GPT-5.6 Sol with high effort or an explicit user override.
 - **Antigravity:** `ui` and `assets`.
 
@@ -109,9 +110,9 @@ Manual overrides cannot bypass repository or safety constraints. The effective f
 
 | Level | Typical work | Execution sequence |
 | --- | --- | --- |
-| T0 | Typo, spacing, rename, tiny isolated adjustment | Claude → Kimi fast → targeted validation |
-| T1 | Small isolated bug or straightforward behavior | Claude → Kimi → relevant checks/fix → affected docs |
-| T2 | Normal contained feature/integration | Kimi explore → Claude plan → Kimi implement → OpenCode tests → optional Antigravity → Codex review → Kimi fixes → Claude acceptance → affected docs |
+| T0 | Typo, spacing, rename, tiny isolated adjustment | Claude → GLM fast → targeted validation |
+| T1 | Small isolated bug or straightforward behavior | Claude → GLM → relevant checks/fix → affected docs |
+| T2 | Normal contained feature/integration | Kimi explore → Claude plan → GLM implement → OpenCode Go tests → optional Antigravity → Codex review → Kimi fixes validated findings → Codex re-review → Claude acceptance → affected docs |
 | T3 | Cross-module, architecture, major data/state flow, substantial regression risk | Full workflow with bounded Claude–Codex architecture debate |
 | T4 | Auth, payments, security, migrations, destructive/sensitive/core architecture | Full workflow with maximum verification |
 

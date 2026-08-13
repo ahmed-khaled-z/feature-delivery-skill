@@ -1,6 +1,6 @@
 ---
 name: feature-delivery-setup
-description: Compatibility entrypoint for configuring the delegate-fleet.v1 lanes consumed by feature-delivery. Use when the user invokes $feature-delivery-setup, asks to configure or change feature-delivery delegates/models, or needs the expected explore, fast, feature, tests, debug, ui, assets, review, architecture, and docs lanes.
+description: Compatibility entrypoint for configuring the delegate-fleet.v1 lanes consumed by feature-delivery. Use when the user invokes $feature-delivery-setup, asks to configure or change feature-delivery delegates/models, or needs the expected explore, fast, feature, tests, fix, debug, ui, assets, review, architecture, and docs lanes.
 ---
 
 # Feature Delivery Setup
@@ -12,9 +12,10 @@ Load the installed `$delegate-setup` skill and follow it completely. Tell it the
 | Lane | Responsibility | Preferred binding |
 | --- | --- | --- |
 | `explore` | Read-only repository evidence | Kimi standalone |
-| `fast` | T0/T1 implementation | Kimi standalone |
-| `feature` | Main implementation and fixes | Kimi standalone |
-| `tests` | Tests and bounded mechanical work | OpenCode |
+| `fast` | T0/T1 implementation | OpenCode + `zai-coding-plan/glm-5.2` |
+| `feature` | Main nonvisual implementation | OpenCode + `zai-coding-plan/glm-5.2` |
+| `tests` | Tests | OpenCode + `opencode-go/kimi-k2.7-code` |
+| `fix` | Claude-validated Codex review fixes | Kimi standalone |
 | `debug` | Difficult debugging only | OpenCode + `zai-coding-plan/glm-5.2` |
 | `ui` | UI/responsive/visual QA | Antigravity |
 | `assets` | Images/icons/illustrations/assets | Antigravity |
