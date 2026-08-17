@@ -1,4 +1,4 @@
 interface:
   display_name: "Feature Delivery"
   short_description: "Classify, orchestrate, and verify feature delivery"
-  default_prompt: "Use $feature-delivery to classify this request from T0 to T4, delegate every repository implementation change through the configured fleet, and run the appropriate verified delivery workflow."
+  default_prompt: "Use $feature-delivery to classify this request from T0 to T4, show a concise pre-execution plan with the lane, implementer, and resolved model for every material task, then delegate every repository implementation change through the configured fleet and run the verified workflow."

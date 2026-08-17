@@ -4,6 +4,8 @@ Claude owns classification, routing, decisions, acceptance criteria, and final v
 
 Every implementation stage named below is a mandatory delegated stage. The active orchestrator must not perform that implementation itself, including at T0. Labels such as `Claude route`, `Claude plan`, and `Claude acceptance` authorize decisions and verification only; they do not authorize repository edits. If a required lane cannot dispatch, stop instead of implementing directly.
 
+Before executing the first dispatch at any tier, present the concise plan/model preview required by `SKILL.md`. Include every material stage, even when the workflow is only one T0 implementation task. Label conditional stages and their triggers. When escalation or rerouting changes the remaining workflow, preview the changed tasks and resolved models before dispatching them.
+
 ## T0 — Ultra fast
 
 `Claude route → GLM implementation through fast → targeted validation → done`

@@ -174,10 +174,24 @@ The skill will:
 3. Ask only blocking questions that cannot be answered from repository evidence.
 4. Produce an English implementation specification while discussing it in the user's language.
 5. Classify the request as T0–T4 and explain the evidence briefly.
-6. Dispatch every repository mutation through its configured lane and retain the lane/implementer plus relay result or session as evidence.
-7. Stop instead of implementing directly when a required delegate is unavailable or cannot authenticate.
-8. Execute only the stages justified by that level, with dynamic escalation when needed.
-9. Synchronize only affected authoritative UI/API/docs artifacts and land only authorized changes.
+6. Show a concise plan before execution, with every material task's lane, implementer, resolved model/dials, and conditional trigger when applicable.
+7. Continue automatically after the preview unless approval or a blocking decision is required.
+8. Dispatch every repository mutation through its configured lane and retain the lane/implementer plus relay result or session as evidence.
+9. Stop instead of implementing directly when a required delegate is unavailable or cannot authenticate.
+10. Execute only the stages justified by that level, with dynamic escalation when needed.
+11. Synchronize only affected authoritative UI/API/docs artifacts and land only authorized changes.
+
+The pre-execution preview uses the effective fleet, not hardcoded model assumptions. A typical preview looks like:
+
+| Task | Purpose | Lane | Implementer | Model/dials | Status or condition |
+| --- | --- | --- | --- | --- | --- |
+| Explore | Gather repository evidence | `explore` | Kimi | configured CLI default (not pinned) | Required for T2+ |
+| Implement | Build the backend behavior | `feature` | OpenCode | `zai-coding-plan/glm-5.2` | Required |
+| Tests | Add or update tests | `tests` | OpenCode | configured test model | Required for T2+ |
+| Review | Independent code review | `review` | Codex | configured review model and effort | Required for T2+ |
+| Fix | Correct validated review findings | `fix` | Kimi | configured CLI default (not pinned) | Only if findings are validated |
+
+Exact values come from the loaded `delegate-fleet.v1`. When no model is pinned, the preview says so instead of inventing a model. If routing or classification changes during execution, the skill shows a revised preview for the affected remaining tasks before continuing.
 
 ## Delegation guarantee and troubleshooting
 
