@@ -2,6 +2,12 @@
 
 `delegate-fleet.v1` is the source of truth for lane bindings and relay dials. It does not decide task tier or workflow order; this skill does.
 
+## Mandatory dispatch contract
+
+Any stage that mutates repository implementation artifacts must run through the selected effective fleet lane. The orchestrator may inspect and verify the result but must not author the mutation. This contract applies to all tiers and to code, tests, migrations, configuration, documentation, and assets.
+
+Record the selected lane and implementer together with the relay result or session identifier. Without that evidence, treat the mutation as not delegated and do not accept it. If a required dispatch fails preflight or execution, report the blocker; do not use the orchestrator as an implicit fallback. Only a current explicit user request for direct or non-delegated implementation suspends this contract.
+
 ## Load without mutation
 
 Locate the installed `delegate-setup` skill and run its read-only loader for the target repository:
@@ -49,7 +55,7 @@ Do not invent model identifiers or bypass an unavailable/untrusted lane with an 
 
 ## Failure and escalation
 
-Return ordinary implementation/test failures to their producing lane. Send only Claude-validated Codex findings to Kimi through `fix`, then return the corrected diff to Codex for re-review. Do not dispatch multiple agents to reimplement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke `debug` when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. A failed or unavailable optional docs/visual lane does not authorize undocumented behavior or unverified visuals; report the limitation and complete only what can be accepted safely.
+Return ordinary implementation/test failures to their producing lane. Send only Claude-validated Codex findings to Kimi through `fix`, then return the corrected diff to Codex for re-review. Do not dispatch multiple agents to reimplement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke `debug` when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. Docs and visual stages are conditional when selecting a workflow, but once repository evidence makes one necessary its delegate stage is required. A failed or unavailable docs/visual lane never authorizes the orchestrator to edit that surface directly; report the limitation and complete only what can be accepted safely.
 
 ## `delegate-fleet.v1` limitations
 
@@ -62,5 +68,6 @@ The schema stores named lane → implementer plus optional model/effort/variant/
 - independence requirements between implementation and review;
 - “docs only if affected” or “debug only if stuck” semantics;
 - shared state, outputs, or acceptance criteria between stages.
+- technical prevention of direct edits by the active orchestrator.
 
-Those behaviors therefore live in `feature-delivery` instructions and are enforced by the active orchestrator. Fleet validation can prove a lane binding is syntactically valid and trusted; it cannot prove the workflow was followed.
+Those behaviors therefore live in `feature-delivery` instructions and are enforced by the active orchestrator. Fleet validation can prove a lane binding is syntactically valid and trusted; it cannot prove the workflow was followed. For reliable activation, invoke `$feature-delivery` explicitly and retain the dispatch evidence required above.

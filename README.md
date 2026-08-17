@@ -6,6 +6,7 @@
 
 - Repository documentation and `AGENTS.md` remain authoritative.
 - Missing prerequisites stop planning and implementation.
+- Every repository implementation change, including T0, must be produced through a configured delegate lane; the orchestrator cannot silently implement it directly.
 - Architecture and schema decisions are never silently redesigned.
 - Tasks stay small, dependency-ordered, and independently verifiable.
 - T0/T1 stay fast; T3/T4 receive bounded adversarial architecture review.
@@ -130,7 +131,7 @@ Dynamic escalation is supported:
 
 ## `delegate-fleet.v1` limitation
 
-The current schema stores only lane names, implementers, and optional dials such as model, effort/variant, timeout, and read-only mode. It cannot encode classification, workflow order, conditional stages, escalation, debate rounds, reviewer independence, Claude's decision authority, or acceptance criteria. Those rules live in `feature-delivery` and must be enforced by the active orchestrator.
+The current schema stores only lane names, implementers, and optional dials such as model, effort/variant, timeout, and read-only mode. It cannot encode classification, workflow order, conditional stages, escalation, debate rounds, reviewer independence, Claude's decision authority, acceptance criteria, or technically prevent the active orchestrator from editing files. Those rules live in `feature-delivery` and must be enforced by the active orchestrator.
 
 ## Configure repository constraints
 
@@ -173,8 +174,28 @@ The skill will:
 3. Ask only blocking questions that cannot be answered from repository evidence.
 4. Produce an English implementation specification while discussing it in the user's language.
 5. Classify the request as T0–T4 and explain the evidence briefly.
-6. Execute only the stages justified by that level, with dynamic escalation when needed.
-7. Synchronize only affected authoritative UI/API/docs artifacts and land only authorized changes.
+6. Dispatch every repository mutation through its configured lane and retain the lane/implementer plus relay result or session as evidence.
+7. Stop instead of implementing directly when a required delegate is unavailable or cannot authenticate.
+8. Execute only the stages justified by that level, with dynamic escalation when needed.
+9. Synchronize only affected authoritative UI/API/docs artifacts and land only authorized changes.
+
+## Delegation guarantee and troubleshooting
+
+Invoke the skill explicitly in the same request that asks for implementation:
+
+```text
+Use $feature-delivery to fix the checkout total calculation.
+```
+
+When active, the skill requires delegation for every repository mutation, including one-line T0 changes. The final report should identify the lane and implementer and include the relay result or session evidence. If the required lane is missing, untrusted, unavailable, unauthenticated, or incompatible, the workflow must stop rather than silently edit the repository directly.
+
+Skills are instruction packages, not operating-system hooks, so they cannot technically block file writes when they were not activated or when a host ignores their instructions. Explicit `$feature-delivery` invocation is therefore more reliable than relying on automatic skill selection. For an additional repository-level guard, add this policy to the nearest `AGENTS.md`:
+
+```md
+## Mandatory delegated implementation
+
+When `$feature-delivery` is active, do not edit repository implementation artifacts directly. Every repository mutation must be produced by a configured delegate lane. Stop and report the blocker if dispatch cannot run.
+```
 
 ## Repository layout
 
