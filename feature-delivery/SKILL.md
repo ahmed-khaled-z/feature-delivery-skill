@@ -61,6 +61,14 @@ Resolve model and dials from the effective fleet rather than from expected defau
 
 After showing the preview, continue automatically unless the user requested approval before execution or a blocking prerequisite, ambiguity, authorization, or safety decision requires an answer. If classification, scope, lane, implementer, model, or workflow order changes later, show a short revised preview for the affected remaining tasks before the next dispatch.
 
+For every task dispatched or running in the background, attribute every user-facing start, progress, completion, failure, timeout, cancellation, or rework update with:
+
+```text
+[Task: <name> | Lane: <lane> | Owner: <implementer> | Model: <resolved model/dials>] <status>
+```
+
+Use the same resolved model rules as the pre-execution preview. Keep parallel background tasks on separate labeled lines so ownership is never ambiguous. Report only meaningful state changes rather than repeating unchanged polling results, but never omit the attribution when an update is shown. Preserve the label across resumed sessions and identify a replacement owner/model before rerouting.
+
 Immediately before each dispatch, read [task-brief-template.md](references/task-brief-template.md). Give the delegate one bounded English brief with exact scope, acceptance criteria, repository constraints, and real verification commands. The orchestrator reviews and lands; delegates do not commit, push, deploy, or run remote migrations unless separately authorized.
 
 For every implementation stage, enforce this order: resolve the lane, preflight it, dispatch, wait for a relay result, record dispatch evidence, then inspect the produced diff. Never edit first and delegate later. Planning-only and read-only requests do not require an implementation dispatch because they produce no repository mutation.

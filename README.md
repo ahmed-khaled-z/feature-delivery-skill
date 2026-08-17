@@ -193,6 +193,15 @@ The pre-execution preview uses the effective fleet, not hardcoded model assumpti
 
 Exact values come from the loaded `delegate-fleet.v1`. When no model is pinned, the preview says so instead of inventing a model. If routing or classification changes during execution, the skill shows a revised preview for the affected remaining tasks before continuing.
 
+Background work keeps the same ownership visible in every meaningful status update:
+
+```text
+[Task: Implement invitations | Lane: feature | Owner: OpenCode | Model: zai-coding-plan/glm-5.2] Running
+[Task: Write tests | Lane: tests | Owner: OpenCode | Model: opencode-go/kimi-k2.7-code] Completed
+```
+
+Start, progress, completion, failure, timeout, cancellation, and rework updates use this label. Parallel tasks appear on separate lines. Unchanged polling results are not repeated, and a rerouted task announces its replacement owner and model before the new dispatch.
+
 ## Delegation guarantee and troubleshooting
 
 Invoke the skill explicitly in the same request that asks for implementation:
