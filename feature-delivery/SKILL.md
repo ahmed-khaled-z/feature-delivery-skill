@@ -35,7 +35,7 @@ Before any implementation artifact can be changed, use the installed `delegate-s
 
 If a required lane is absent, unavailable, unauthenticated, or bound incompatibly, use an explicitly approved equivalent lane if present; otherwise stop or omit only an optional stage. A required implementation stage is never optional. Never infer authorization from an installed CLI, silently change the fleet, silently implement the work yourself, or silently replace a required independent reviewer with the implementer.
 
-## 4. Specify and execute the tier workflow
+## 4. Preview the plan, then execute the tier workflow
 
 Create a compact canonical English specification:
 
@@ -50,6 +50,16 @@ Verification expectations:
 ```
 
 Read [orchestration-workflows.md](references/orchestration-workflows.md) and execute the selected T0–T4 sequence. Present only the level, reason, material stages, and meaningful conditional gates; do not expose internal overhead for tiny work. Keep one implementation owner per surface. Parallelize only independent work with no shared files or decisions.
+
+Before the first execution dispatch, show the user a concise pre-execution preview in the user's language. Do not hide it in internal reasoning. Include the tier and reason, then list every material task in execution order with:
+
+```text
+Task | Purpose | Lane | Implementer | Model/dials | Status or condition
+```
+
+Resolve model and dials from the effective fleet rather than from expected defaults in this skill. Show the exact configured model identifier plus effort or variant when present. If the fleet does not pin a model, write `configured CLI default (not pinned)`; never guess. For orchestrator-owned planning, decisions, or acceptance, identify the active orchestrator and its model when the host exposes it, otherwise write `active orchestrator model (not exposed)`. Mark conditional tasks such as `fix`, `debug`, `ui`, `assets`, and `docs` as conditional and state their trigger.
+
+After showing the preview, continue automatically unless the user requested approval before execution or a blocking prerequisite, ambiguity, authorization, or safety decision requires an answer. If classification, scope, lane, implementer, model, or workflow order changes later, show a short revised preview for the affected remaining tasks before the next dispatch.
 
 Immediately before each dispatch, read [task-brief-template.md](references/task-brief-template.md). Give the delegate one bounded English brief with exact scope, acceptance criteria, repository constraints, and real verification commands. The orchestrator reviews and lands; delegates do not commit, push, deploy, or run remote migrations unless separately authorized.
 
