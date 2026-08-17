@@ -53,6 +53,8 @@ Do not invent model identifiers or bypass an unavailable/untrusted lane with an 
 - Antigravity owns visual/UI/assets work when applicable. Prefer existing suitable assets over generating replacements.
 - Claude remains outside the fleet as the top-level orchestrator and decision-maker.
 
+When a relay runs in the background, label every user-facing status change with its task, lane, implementer owner, and resolved model/dials. Use one labeled line per concurrent relay. Keep the same attribution for resumed sessions; if routing changes, announce the replacement attribution before the new dispatch. Do not emit repetitive updates for unchanged polls.
+
 ## Failure and escalation
 
 Return ordinary implementation/test failures to their producing lane. Send only Claude-validated Codex findings to Kimi through `fix`, then return the corrected diff to Codex for re-review. Do not dispatch multiple agents to reimplement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke `debug` when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. Docs and visual stages are conditional when selecting a workflow, but once repository evidence makes one necessary its delegate stage is required. A failed or unavailable docs/visual lane never authorizes the orchestrator to edit that surface directly; report the limitation and complete only what can be accepted safely.
