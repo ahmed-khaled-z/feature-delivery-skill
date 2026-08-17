@@ -2,11 +2,13 @@
 
 Claude owns classification, routing, decisions, acceptance criteria, and final verification. If the user explicitly overrides the orchestrator, references to Claude in this document mean that active orchestrator for the run. Keep stages conditional and avoid orchestration work that cannot improve the result.
 
+Every implementation stage named below is a mandatory delegated stage. The active orchestrator must not perform that implementation itself, including at T0. Labels such as `Claude route`, `Claude plan`, and `Claude acceptance` authorize decisions and verification only; they do not authorize repository edits. If a required lane cannot dispatch, stop instead of implementing directly.
+
 ## T0 — Ultra fast
 
 `Claude route → GLM implementation through fast → targeted validation → done`
 
-- Use the `fast` lane.
+- Dispatch the implementation through the `fast` lane; this remains mandatory for a one-line or mechanical change.
 - Skip exploration reports, architecture debate, Codex review, GLM debugging, and OpenCode tests unless repository evidence makes one genuinely necessary.
 - The `fast` implementer may update the minimal directly affected test at this level. Targeted validation means diff inspection plus the narrowest existing relevant check; do not add broad test infrastructure for a literal mechanical change.
 - Update documentation only when documented behavior changed.
