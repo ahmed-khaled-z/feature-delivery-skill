@@ -1,7 +1,7 @@
 interface:
   display_name: "Feature Delivery Setup"
-  short_description: "Configure feature delivery fleet lanes"
-  default_prompt: "Use $feature-delivery-setup to configure the delegate-fleet.v1 lanes used by feature delivery."
+  short_description: "Configure the dynamic delivery fleet"
+  default_prompt: "Use $feature-delivery-setup to inspect or change the delegate-fleet.v1 lanes consumed dynamically by feature delivery. Preserve current bindings unless I request changes, and require an explicit approved proposal before writing."
 
 policy:
   allow_implicit_invocation: false
