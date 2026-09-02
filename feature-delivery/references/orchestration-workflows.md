@@ -1,77 +1,45 @@
-# Tiered orchestration workflows
+# Quick and full workflows
 
-Claude owns classification, routing, decisions, acceptance criteria, and final verification. If the user explicitly overrides the orchestrator, references to Claude in this document mean that active orchestrator for the run. Keep stages conditional and avoid orchestration work that cannot improve the result.
+Every repository mutation in either mode is delegated through a dynamically resolved current lane. The orchestrator may inspect, decide, and verify; it does not patch implementation artifacts directly.
 
-Every implementation stage named below is a mandatory delegated stage. The active orchestrator must not perform that implementation itself, including at T0. Labels such as `Claude route`, `Claude plan`, and `Claude acceptance` authorize decisions and verification only; they do not authorize repository edits. If a required lane cannot dispatch, stop instead of implementing directly.
+## `quick` — T0/T1 only
 
-Before executing the first dispatch at any tier, present the concise plan/model preview required by `SKILL.md`. Include every material stage, even when the workflow is only one T0 implementation task. Label conditional stages and their triggers. When escalation or rerouting changes the remaining workflow, preview the changed tasks and resolved models before dispatching them.
+Use when the user explicitly chooses `quick` and grounding confirms the change is isolated, reversible, low-risk, and directly verifiable.
 
-## T0 — Ultra fast
+1. Ground the exact surface and confirm T0 or T1.
+2. Produce a two-to-four sentence bounded intent. If a selected process skill imposes approval, obtain it.
+3. Resolve one compatible writable lane dynamically.
+4. Dispatch one narrow brief with `ponytail ultra` for mechanical T0, otherwise `ponytail full`.
+5. Inspect the diff and run the narrowest existing relevant check.
+6. Update docs through a separate dynamically selected lane only if observable documented behavior changed.
+7. Run review only when a review trigger below appears.
 
-`Claude route → GLM implementation through fast → targeted validation → done`
+Do not create broad test infrastructure for a literal mechanical T0 edit. Behavior-changing T1 work still follows repository testing policy and uses test-first delivery when a test harness exists.
 
-- Dispatch the implementation through the `fast` lane; this remains mandatory for a one-line or mechanical change.
-- Skip exploration reports, architecture debate, Codex review, GLM debugging, and OpenCode tests unless repository evidence makes one genuinely necessary.
-- The `fast` implementer may update the minimal directly affected test at this level. Targeted validation means diff inspection plus the narrowest existing relevant check; do not add broad test infrastructure for a literal mechanical change.
-- Update documentation only when documented behavior changed.
+## `full` — default, T2–T4 and substantial features
 
-## T1 — Fast
+1. Ground dependencies, architecture, data flow, tests, UI rules, and acceptance criteria.
+2. Select the exact Superpowers process skills from [skill-routing.md](skill-routing.md). New or ambiguous features start with `brainstorming`. A bounded approved design proceeds directly to task briefs; an architectural approved design proceeds to a delegated spec and `writing-plans`.
+3. At T3/T4, dynamically select distinct plan/challenge lanes when available and run a bounded architecture debate. The orchestrator records accepted, partially accepted, and rejected objections with evidence.
+4. Split the approved plan into independently verifiable, non-overlapping tasks. Resolve one current lane per task.
+5. Dispatch implementation. Keep one owner per surface; parallelize only tasks with no shared files or unresolved decisions.
+6. For UI/UX/visual work, apply [ui-delivery.md](ui-delivery.md).
+7. Inspect all diffs and run build, analysis, tests, and task-specific checks.
+8. Run `debate-review` on the combined change.
+9. Validate each finding, then apply [review-lifecycle.md](review-lifecycle.md) for accepted fixes and re-review.
+10. Delegate affected documentation only after behavior is stable, then run a final landing check.
+11. Verify every acceptance criterion and report evidence.
 
-`Claude route → GLM implementation through fast/feature → relevant checks/tests → same lane fixes failures → docs if affected → Claude acceptance → done`
+## Review triggers
 
-- Use `fast` or `feature` according to the effective fleet.
-- The implementation lane may update directly affected localized tests at this level.
-- Keep validation targeted. Do not invoke expensive reasoning unless findings force escalation.
-
-## T2 — Standard
-
-`Kimi explore → Claude plan → GLM implement → OpenCode Go tests → Antigravity visual/UI/assets work when applicable → Codex independent review → Kimi fixes validated findings → Codex re-review → Claude acceptance → docs if affected`
-
-- Exploration is evidence gathering, not architecture design.
-- Use `explore`, `feature`, `tests`, optional `ui`/`assets`, `review`, `fix` only when review findings are validated, and optional `docs`.
-- GLM through OpenCode/Z.AI Coding Plan owns main implementation. OpenCode Go owns new or changed tests at T2+; Kimi must not duplicate either task.
-- Do not run the Claude–Codex architecture debate for ordinary T2 work.
-- If Antigravity owns a UI/visual surface, GLM must not independently implement the same surface. Re-run affected checks after visual work.
-- Claude's acceptance at this stage establishes implementation stability. Run one final landing check after any affected documentation is updated.
-
-## T3/T4 — Full
-
-1. Kimi explores through the `explore` lane and produces repository evidence only.
-2. Claude writes the initial architecture proposal.
-3. Codex uses the `architecture` lane as an adversarial reviewer with verified `gpt-5.6-sol`, effort `high`. If that required binding is unavailable, stop for an explicit override instead of silently weakening the debate.
-4. Claude labels every objection `ACCEPT`, `PARTIALLY ACCEPT`, or `REJECT` with repository evidence and rationale.
-5. Codex receives one final challenge round.
-6. Claude makes the authoritative decision and writes the implementation plan and acceptance criteria.
-7. GLM-5.2 performs the main nonvisual implementation through OpenCode/Z.AI Coding Plan on `feature`.
-8. OpenCode Go owns tests through `tests`.
-9. Antigravity owns applicable UI, responsive, visual, image, icon, illustration, and asset surfaces through `ui` or `assets`.
-10. Run repository build, analysis, and tests.
-11. Invoke `debug` only for difficult unresolved build, test, runtime, log, or root-cause failures. The expected binding is OpenCode with Z.AI Coding Plan `zai-coding-plan/glm-5.2`; GLM is not a standalone CLI.
-12. Codex performs an independent final implementation review through `review`.
-13. Claude validates each finding; Kimi fixes only validated findings through `fix`.
-14. Codex re-reviews the corrected diff through the same independent `review` session or an explicitly tracked fresh review.
-15. Claude verifies every acceptance criterion.
-16. If documentation is affected, use `docs` after stability; the expected low-cost binding is `opencode/deepseek-v4-flash-free`.
-17. Run a final landing check after documentation. The implementation acceptance decision remains Claude's.
-
-The authoritative plan must assign non-overlapping surfaces such as backend behavior, migration tooling, deployment configuration, tests, and UI. GLM owns main nonvisual implementation, OpenCode Go owns T2+ test files, Antigravity owns assigned visual surfaces, and Kimi's `fix` scope is limited to Claude-validated Codex findings.
-
-An independent Codex critique or review must run in a separate delegated process/session with a fresh bounded brief and repository evidence. The active orchestrator's own reasoning never counts as the required independent Codex pass, even when Codex is the manually overridden orchestrator.
-
-### Bounded architecture debate
-
-Kimi's exploration report must identify relevant modules/files/symbols, current architecture, similar implementations, state/data flow, APIs, tests, platform/flavor behavior, regression areas, and constraints from code. Kimi must not design the solution in this phase.
-
-Codex must try to disprove Claude's proposal: challenge assumptions, architecture, accidental complexity, simpler alternatives, regressions, state/concurrency, security, performance, edge cases, and tests. Ground disagreements in repository evidence whenever possible.
-
-Allow at most two Codex challenge rounds: the initial critique and one final challenge after Claude's evaluation. Stop after Claude's final decision; agreement is not required.
+Review is mandatory for T2–T4 and for any lower-tier change involving unexpected scope, shared behavior, a public contract, security/privacy, state/concurrency, data/schema, performance risk, unfamiliar integration, or nontrivial UI interaction. A purely mechanical T0 and a contained well-tested T1 may omit review, with the omission stated in the final report.
 
 ## Dynamic escalation
 
-- T0/T1 → T2 when the change reaches shared behavior, multiple coupled surfaces, or needs independent review.
-- T2 → T3 when architectural, cross-module, state/data-flow, concurrency, or substantial regression complexity appears.
-- Any level → T4 when a critical trigger is discovered.
-- Any implementation → `debug` when the same meaningful build/test/runtime failure persists after one evidence-based correction and rerun, or when standard code inspection and command output cannot localize a cross-component/runtime cause. A first ordinary failure alone is not enough.
-- Any level → `ui`/`assets` when UI, responsive behavior, visual QA, screenshots, images, illustrations, or icons become necessary.
+- `quick` → `full` when the task exceeds T1 or gains a review trigger.
+- T0/T1 → T2 when multiple coupled surfaces, shared behavior, or independent review becomes necessary.
+- T2 → T3 for architecture, cross-module state/data flow, concurrency, major refactoring, or substantial regression risk.
+- Any tier → T4 for authentication/authorization, payments, sensitive data, migrations, destructive/irreversible operations, or serious production impact.
+- Any implementation → systematic diagnosis when the root cause is unknown or a meaningful failure persists after one evidence-based correction and rerun.
 
-On escalation, stop dispatching under the old workflow, record the evidence, re-run prerequisites, preserve verified work, and resume at the first missing stage of the stronger workflow. Do not repeat already sufficient work or duplicate implementation.
+On escalation, stop new dispatches under the old workflow, preserve verified work, re-run prerequisites, select any newly required skills, show a revised preview, and resume at the first missing stage. Do not duplicate completed work.

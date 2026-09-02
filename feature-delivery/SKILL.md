@@ -1,89 +1,54 @@
 ---
 name: feature-delivery
-description: Classify software work from T0 trivial through T4 critical, require repository changes to be produced through configured delegate lanes, then orchestrate repository-grounded planning, adversarial architecture review, implementation, testing, visual work, debugging, documentation, and acceptance with dynamic escalation. Use when the user asks to build, implement, fix, refactor, continue, or plan software work and wants quality, speed, and cost balanced automatically.
+description: Use when the user asks to build, change, fix, refactor, or deliver repository software through a configured delegate fleet, including quick low-risk edits and medium or large features.
 ---
 
 # Feature Delivery
 
-Claude is the default primary orchestrator: understand the natural-language request, classify it, choose the workflow, make architecture decisions, and perform final acceptance. Do not ask the user to select lanes for ordinary work. Honor an explicit workflow, tier, lane, delegate, model, or orchestrator override when it does not violate repository or safety constraints. When another host explicitly invokes this skill, treat that as a manual orchestrator override; do not pretend that host is Claude.
+The active host is the orchestrator. It grounds the request, chooses the mode and T0–T4 tier, resolves the current fleet, dispatches bounded work, inspects every result, and performs final acceptance. It does not author repository mutations unless the current user explicitly says to implement directly or not delegate.
 
-Optimize quality, speed, and cost together. Specialize agents instead of paying multiple premium agents to implement the same behavior.
+## Commands
 
-## Mandatory delegation invariant
+- `$feature-delivery quick <request>` — a fast path for an explicitly small, reversible, low-risk T0/T1 change. Use one implementation dispatch and the narrowest credible verification. Escalate automatically to `full` before the next mutation if repository evidence reveals broader risk.
+- `$feature-delivery full <request>` — the default when the mode is omitted. Use for new features, T2–T4 work, cross-file behavior, architecture, migrations, security, data, or anything whose risk is not clearly negligible.
 
-For every request that writes repository implementation artifacts, every repository mutation must be produced through an effective fleet lane before that artifact is changed. This applies at T0–T4 and includes production code, tests, migrations, configuration, documentation, and visual assets. A tiny diff, urgency, convenience, or cost is not an exception.
+`quick` changes ceremony, never safety. Authentication, authorization, payments, migrations, destructive operations, sensitive data, concurrency, shared contracts, or meaningful architectural decisions cannot remain in `quick`.
 
-The active orchestrator may ground the request, classify, plan, create temporary orchestration briefs, inspect diffs, run checks, validate findings, and land verified work when authorized. It must not patch implementation artifacts itself. The only bypass is an explicit instruction in the current user request to implement directly or not delegate; an orchestrator or tier override alone is not a bypass.
+## Non-negotiable invariants
 
-Before accepting any delegated mutation, retain dispatch evidence: the selected lane and implementer plus the relay result or session identifier. If the required lane cannot dispatch because it is missing, untrusted, unavailable, unauthenticated, or incompatible, stop and report the blocker. Never silently fall back to direct implementation.
+1. Load the effective `delegate-fleet.v1` map at run time. Never encode lane names, implementers, models, or effort values in this skill.
+2. Every repository mutation—code, tests, configuration, migrations, docs, and assets—must be produced through a compatible current fleet lane before the artifact changes.
+3. Every delegated task requires `ponytail`; use `ultra` only for a genuinely mechanical `quick` T0 task and `full` otherwise. Ponytail never removes security, validation, error handling, accessibility, or explicit requirements.
+4. Choose model reasoning effort from the task tier when the selected relay/model supports an override. Preserve the configured lane dial when support cannot be verified; never invent a value.
+5. Select supporting skills from the target delegate's current Skills Library by exact name and task semantics. Do not assume a skill is installed merely because it exists on the orchestrator.
+6. UI/UX design, layout, styling, responsive, accessibility-presentation, interaction, or other visual implementation requires both `ui-ux-pro-max` and `frontend-design` in the delegate brief. A copy-only or nonvisual behavior edit does not trigger this gate.
+7. T2–T4 work and any risk-triggered T0/T1 work use `debate-review`. Fixing accepted review findings uses the review lifecycle in [review-lifecycle.md](references/review-lifecycle.md).
+8. Treat delegate reports as claims. Inspect the diff and run fresh verification before accepting or landing work.
 
-## 1. Ground and gate
+## Workflow
 
-Preserve the request and discuss it in the user's language. Before planning or delegation, read the nearest `AGENTS.md`; repository status and relevant diff; named architecture, ERD, product, design, status, and execution docs; and relevant code, tests, migrations, configuration, and deployment setup. Repository and user rules are authoritative. Preserve unrelated changes and confirmed architecture/schema decisions.
+1. **Ground.** Read the nearest `AGENTS.md`, repository status and relevant diff, named design/product/architecture docs, and the code/tests/configuration that control the requested behavior. Preserve unrelated changes.
+2. **Classify.** Read [task-classification.md](references/task-classification.md). Record mode, tier, and one evidence-based reason. Ask only for a decision that materially changes scope, safety, or external effects.
+3. **Shape.** For reasoning-heavy work, read [skill-routing.md](references/skill-routing.md) and apply the exact Superpowers reasoning and approval gates before implementation. Use that reference's ownership adaptation when a process skill assumes direct writes, commits, or nested execution.
+4. **Resolve.** Read [delegation-routing.md](references/delegation-routing.md), load the live fleet, rank eligible lanes by capability and semantic fit, then preflight only the selected relay.
+5. **Preview.** Show the user the mode, tier, reason, and material tasks in execution order:
 
-Identify required earlier delivery steps, migrations, APIs, config, credentials, infrastructure, UI foundations, tests, fixtures, observability, security, and deployment dependencies. If a prerequisite is missing, stop before planning or delegation and state what is missing, why it is required, the correct order, and the needed decision or access. Ask only blocking ambiguity questions; state safe reversible assumptions.
+   ```text
+   Task | Purpose | Lane | Implementer | Model | Effort/variant | Ponytail | Skills | Status/condition
+   ```
 
-## 2. Classify before dispatch
+   Use exact values from the live fleet and the selected one-off dial. Write `configured CLI default (not pinned)` when no model is pinned. Continue automatically unless an approval gate, missing prerequisite, safety decision, or external mutation requires an answer.
+6. **Dispatch.** Immediately before each dispatch, read [task-brief-template.md](references/task-brief-template.md). Keep one owner per surface and retain lane, relay result/session id, and touched-file evidence.
+7. **Inspect and verify.** Review the full diff for scope, architecture, tests, regressions, security, performance, concurrency, accessibility, and unsupported APIs. Run the repository's real checks yourself.
+8. **Review and correct.** Apply [review-lifecycle.md](references/review-lifecycle.md) when review is required. Reclassify and re-preview remaining work if risk or routing changes.
+9. **Accept.** Check every acceptance criterion with fresh evidence. Commit, push, deploy, comment, resolve threads, or mutate external systems only when authorized.
 
-Read [task-classification.md](references/task-classification.md). Assign the highest applicable T0–T4 level using blast radius, coupling, novelty, reversibility, data/security sensitivity, and verification burden—not estimated file count alone. Record the level and a one-sentence evidence-based reason. Classification is provisional until repository grounding finishes.
+Read [orchestration-workflows.md](references/orchestration-workflows.md) for the two mode workflows and escalation rules. Load [ui-delivery.md](references/ui-delivery.md) only for user-facing UI/UX or visual work, and [api-synchronization.md](references/api-synchronization.md) only when the repository names an authoritative API artifact.
 
-Upgrade immediately when execution reveals higher risk or complexity. Re-run the prerequisite gate and switch to the stronger workflow from the next safe boundary. Never use a user override to bypass required security, data, migration, or architecture safeguards.
+## Dispatch failure
 
-## 3. Resolve the effective fleet and pass the delegation gate
+If the selected lane, relay, authentication, model, or required skill is absent or incompatible, try another eligible lane only when it preserves capability, independence, safety, and the user's stated constraints. Announce any material reroute. If no compatible lane exists, stop and report the exact blocker; never silently edit directly.
 
-Before any implementation artifact can be changed, use the installed `delegate-setup` helper to load the effective `delegate-fleet.v1` map for the repository. Do not rewrite bindings during delivery. Read [delegation-routing.md](references/delegation-routing.md) to map workflow responsibilities onto the current lanes and preflight only a lane immediately before using it.
+## Completion report
 
-If a required lane is absent, unavailable, unauthenticated, or bound incompatibly, use an explicitly approved equivalent lane if present; otherwise stop or omit only an optional stage. A required implementation stage is never optional. Never infer authorization from an installed CLI, silently change the fleet, silently implement the work yourself, or silently replace a required independent reviewer with the implementer.
-
-## 4. Preview the plan, then execute the tier workflow
-
-Create a compact canonical English specification:
-
-```text
-Outcome:
-Users and behavior:
-In scope / out of scope:
-Repository evidence and constraints:
-Acceptance criteria:
-Assumptions and resolved decisions:
-Verification expectations:
-```
-
-Read [orchestration-workflows.md](references/orchestration-workflows.md) and execute the selected T0–T4 sequence. Present only the level, reason, material stages, and meaningful conditional gates; do not expose internal overhead for tiny work. Keep one implementation owner per surface. Parallelize only independent work with no shared files or decisions.
-
-Before the first execution dispatch, show the user a concise pre-execution preview in the user's language. Do not hide it in internal reasoning. Include the tier and reason, then list every material task in execution order with:
-
-```text
-Task | Purpose | Lane | Implementer | Model/dials | Status or condition
-```
-
-Resolve model and dials from the effective fleet rather than from expected defaults in this skill. Show the exact configured model identifier plus effort or variant when present. If the fleet does not pin a model, write `configured CLI default (not pinned)`; never guess. For orchestrator-owned planning, decisions, or acceptance, identify the active orchestrator and its model when the host exposes it, otherwise write `active orchestrator model (not exposed)`. Mark conditional tasks such as `fix`, `debug`, `ui`, `assets`, and `docs` as conditional and state their trigger.
-
-After showing the preview, continue automatically unless the user requested approval before execution or a blocking prerequisite, ambiguity, authorization, or safety decision requires an answer. If classification, scope, lane, implementer, model, or workflow order changes later, show a short revised preview for the affected remaining tasks before the next dispatch.
-
-For every task dispatched or running in the background, attribute every user-facing start, progress, completion, failure, timeout, cancellation, or rework update with:
-
-```text
-[Task: <name> | Lane: <lane> | Owner: <implementer> | Model: <resolved model/dials>] <status>
-```
-
-Use the same resolved model rules as the pre-execution preview. Keep parallel background tasks on separate labeled lines so ownership is never ambiguous. Report only meaningful state changes rather than repeating unchanged polling results, but never omit the attribution when an update is shown. Preserve the label across resumed sessions and identify a replacement owner/model before rerouting.
-
-Immediately before each dispatch, read [task-brief-template.md](references/task-brief-template.md). Give the delegate one bounded English brief with exact scope, acceptance criteria, repository constraints, and real verification commands. The orchestrator reviews and lands; delegates do not commit, push, deploy, or run remote migrations unless separately authorized.
-
-For every implementation stage, enforce this order: resolve the lane, preflight it, dispatch, wait for a relay result, record dispatch evidence, then inspect the produced diff. Never edit first and delegate later. Planning-only and read-only requests do not require an implementation dispatch because they produce no repository mutation.
-
-## 5. Apply conditional gates
-
-- For material UI composition, responsive behavior, visual QA, image, icon, illustration, or asset work, read [ui-delivery.md](references/ui-delivery.md). Use the visual lane without duplicating the same surface through `fast` or `feature`. Keep a tiny isolated T0 UI adjustment on `fast` unless repository policy or discovered visual risk requires escalation.
-- For API changes, read [api-synchronization.md](references/api-synchronization.md) only when the repository identifies an authoritative API artifact.
-- Invoke difficult debugging only after ordinary diagnosis or checks fail, not preemptively.
-- Update documentation only after implementation and verification are stable, and only when observable behavior, setup, API, environment variables, architecture notes, changelog, or useful comments changed.
-
-## 6. Review, correct, verify, and land
-
-Treat every delegate report as an unverified claim. Inspect changed tests and the full diff for scope creep, architecture drift, weakened coverage, regressions, swallowed errors, security/performance/concurrency issues, speculative abstractions, duplication, and unverified APIs. Re-run relevant repository checks yourself.
-
-Return ordinary implementation or test failures to the lane that produced them. After an independent Codex review, send only findings that Claude validates to Kimi through `fix`; then have Codex re-review the corrected diff before acceptance. Do not ask Kimi to reimplement the feature or fix unvalidated reviewer suggestions. If failures expose higher risk, escalate the tier; if runtime/build/test diagnosis becomes genuinely difficult, invoke `debug`.
-
-Claude performs the final acceptance check against the authoritative plan and criteria. Land only verified work. Commit only when authorized; push, deploy, alter external tracking, or mutate remote data only with explicit authorization. Report the final tier, any escalation, lane/model summary, delivered outcome, verification, affected documentation, landing state, blockers, and any `delegate-fleet.v1` limitation encountered.
+Report the final mode and tier, any escalation, actual lanes/models/dials used, selected skills, delivered behavior, verification evidence, review/fix status, documentation impact, landing state, and unresolved blockers.

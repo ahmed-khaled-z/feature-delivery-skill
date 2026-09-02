@@ -1,4 +1,4 @@
 interface:
   display_name: "Feature Delivery"
-  short_description: "Classify, orchestrate, and verify feature delivery"
-  default_prompt: "Use $feature-delivery to classify this request from T0 to T4, show a concise pre-execution plan with the lane, implementer, and resolved model for every material task, label every background-task update with its owner and model, then delegate every repository implementation change through the configured fleet and run the verified workflow."
+  short_description: "Dynamic quick or full delegated delivery"
+  default_prompt: "Use $feature-delivery full for medium, large, or new feature work; use $feature-delivery quick only for an explicitly low-risk T0/T1 change. Load the effective fleet dynamically, select compatible lanes without hardcoded model mappings, choose supported reasoning effort by tier, require Ponytail on every delegated coding task, route exact design and Superpowers skills by trigger, delegate every repository mutation, and verify review findings and acceptance with fresh evidence."

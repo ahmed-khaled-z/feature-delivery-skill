@@ -1,75 +1,80 @@
-# Effective fleet routing and preflight
+# Dynamic fleet routing
 
-`delegate-fleet.v1` is the source of truth for lane bindings and relay dials. It does not decide task tier or workflow order; this skill does.
+`delegate-fleet.v1` is the only source of truth for current lane names, implementers, models, and configured dials. This reference defines how to select from that map; it never defines the map itself.
 
-## Mandatory dispatch contract
-
-Any stage that mutates repository implementation artifacts must run through the selected effective fleet lane. The orchestrator may inspect and verify the result but must not author the mutation. This contract applies to all tiers and to code, tests, migrations, configuration, documentation, and assets.
-
-Record the selected lane and implementer together with the relay result or session identifier. Without that evidence, treat the mutation as not delegated and do not accept it. If a required dispatch fails preflight or execution, report the blocker; do not use the orchestrator as an implicit fallback. Only a current explicit user request for direct or non-delegated implementation suspends this contract.
-
-## Load without mutation
+## Load the effective fleet
 
 Locate the installed `delegate-setup` skill and run its read-only loader for the target repository:
 
 ```bash
-node "<delegate-setup-skill>/scripts/config.mjs" load --cwd "/path/to/repo"
+node "<delegate-setup-skill>/scripts/config.mjs" load --cwd "/absolute/path/to/repo"
 ```
 
-Use the effective merged lanes. Project lanes replace same-named global lanes. If project config exists but is untrusted, do not dispatch it; ask the user to review and approve it through `$delegate-setup`. Never edit fleet files during feature delivery.
+Use the merged result. A trusted project lane replaces a same-named global lane. If project configuration is untrusted, stop and ask the user to review it through `$delegate-setup`. Never edit fleet configuration during delivery.
 
-## Expected responsibility lanes
+## Build the candidate set
 
-| Responsibility | Preferred lane | Expected implementer |
-| --- | --- | --- |
-| Repository evidence | `explore` | Kimi |
-| Tiny/fast implementation | `fast` | OpenCode + Z.AI GLM-5.2 |
-| Main nonvisual implementation | `feature` | OpenCode + Z.AI GLM-5.2 |
-| Tests | `tests` | OpenCode Go configured test model |
-| Validated Codex review fixes | `fix` | Kimi standalone |
-| Difficult debugging | `debug` | OpenCode with Z.AI GLM-5.2 model |
-| UI/responsive/visual QA | `ui` | Antigravity (`agy`) |
-| Images/icons/illustrations/assets | `assets` | Antigravity (`agy`) |
-| Independent implementation review | `review` | Codex |
-| Adversarial architecture critique | `architecture` | Codex GPT-5.6 Sol, high effort |
-| Post-stability documentation | `docs` | OpenCode capable free model |
+For each current lane, derive capabilities from all available evidence:
 
-These are responsibility contracts, not permission to rewrite the fleet. Manual user lane/model overrides win when safe. If a preferred lane is absent, inspect the effective map for an explicit compatible equivalent. Ask before substituting when independence, cost, or capability would change.
+- its live name, implementer, model, dials, and `readOnly` value;
+- the implementer's delegate skill and relay help;
+- executable/authentication/model preflight results;
+- the repository and task constraints.
 
-## Dispatch rules
+A write task excludes read-only lanes. A planning/review task prefers read-only lanes or forces the relay's supported read-only mode. Exclude lanes whose relay is unavailable, unauthenticated, incompatible with the pinned model, or unable to load a required task skill either natively or from a preflighted canonical local `SKILL.md`.
 
-Load only the selected `*-delegate` skill immediately before use. Preflight that lane's executable, authentication, model, and dials; do not probe unrelated tools. Dispatch with the configured lane so the relay resolves and validates its own binding:
+## Rank without hardcoded lane names
+
+Rank eligible candidates in this order:
+
+1. A safe explicit lane override in the current user request.
+2. Required capability: write vs read-only, platform/tool access, visual support, and independent-review separation.
+3. Semantic fit inferred from the current lane name and binding. Match task concepts such as quick/small, implement/build/feature/general, UI/UX/design/visual, fix/bug/debug, docs, plan/architecture, test, and review—without requiring any literal name.
+4. Tier fit: cheaper/faster eligible bindings for T0/T1; stronger reasoning for T2–T4 and architecture/security/data work.
+5. A generic compatible writable implementation lane as fallback.
+
+Use names as signals, not contracts. When two candidates are materially equivalent, prefer the narrower semantic match. Ask once before choosing if the difference materially changes cost, independence, data access, or expected capability. Never route by a model name remembered from an earlier fleet.
+
+## Tier-based reasoning dial
+
+After selecting the lane, inspect the bound relay's supported dials and available values. An explicit current-user override wins. Otherwise request the nearest supported level to:
+
+| Tier | Desired reasoning |
+| --- | --- |
+| T0 | minimal/low |
+| T1 | medium |
+| T2 | high |
+| T3 | highest supported practical level |
+| T4 | highest supported level |
+
+Use `effort` only for relays that support effort and `variant` only for relays that support variants. Do not write these one-off values back to the fleet. If support or accepted values cannot be established, keep the configured lane dial/default and disclose that in the preview.
+
+## Relay dispatch
+
+Load only the selected implementer's `*-delegate` skill immediately before dispatch. Follow its relay instructions and pass the selected current lane so the relay resolves its own binding:
 
 ```bash
-node "<delegate-skill>/scripts/relay.mjs" --brief brief.txt --lane "<lane>" --cd "/path/to/repo"
+node "<delegate-skill>/scripts/relay.mjs" --brief brief.txt --lane "<resolved-lane>" --cd "/absolute/path/to/repo"
 ```
 
-Do not invent model identifiers or bypass an unavailable/untrusted lane with an implicit CLI default. Preserve these ownership rules:
+When feature delivery is explicitly active, its mandatory delegation contract overrides a delegate skill's generic recommendation to handle inline-sized work directly. Relay safety, preflight, and execution instructions still apply.
 
-- Kimi explores and fixes only Claude-validated Codex review findings through `fix`. Prefer its standalone subscription/configured alias; do not use Kimi for the initial implementation or tests.
-- Codex is an independent challenger/reviewer, not the default implementation worker. T3/T4 architecture critique requires verified `gpt-5.6-sol` with high effort; stop for an explicit override if the active binding cannot provide it.
-- GLM-5.2 through OpenCode/Z.AI Coding Plan owns `fast`, `feature`, and difficult `debug` work; never treat GLM as a standalone CLI.
-- OpenCode Go owns `tests`, and the configured free OpenCode model owns documentation.
-- Antigravity owns visual/UI/assets work when applicable. Prefer existing suitable assets over generating replacements.
-- Claude remains outside the fleet as the top-level orchestrator and decision-maker.
+Pass a model/dial override only when the relay help and model capability confirm it. For read-only work, use the relay's supported read-only option and verify `touchedFiles`/`readOnlyViolation` after completion.
 
-When a relay runs in the background, label every user-facing status change with its task, lane, implementer owner, and resolved model/dials. Use one labeled line per concurrent relay. Keep the same attribution for resumed sessions; if routing changes, announce the replacement attribution before the new dispatch. Do not emit repetitive updates for unchanged polls.
+Retain dispatch evidence: task, resolved lane, implementer, model/dials, relay result or session id, and touched files. Attribute meaningful progress as:
 
-## Failure and escalation
+```text
+[Task: <name> | Lane: <lane> | Owner: <implementer> | Model: <model/dials>] <status>
+```
 
-Return ordinary implementation/test failures to their producing lane. Send only Claude-validated Codex findings to Kimi through `fix`, then return the corrected diff to Codex for re-review. Do not dispatch multiple agents to reimplement the same surface. Run independent Codex critique/review in a separate delegated process/session; the orchestrator's own reasoning cannot satisfy that gate. Invoke `debug` when a meaningful failure persists after one evidence-based correction and rerun, or standard inspection/output cannot localize a cross-component/runtime cause. Docs and visual stages are conditional when selecting a workflow, but once repository evidence makes one necessary its delegate stage is required. A failed or unavailable docs/visual lane never authorizes the orchestrator to edit that surface directly; report the limitation and complete only what can be accepted safely.
+## Planning and independence
 
-## `delegate-fleet.v1` limitations
+For `full` T3/T4 work, select up to two distinct eligible planning/architecture lanes dynamically. Use one to propose and the other to challenge; the orchestrator disposes objections and makes the final decision. If only one safe planning lane exists, use a single read-only plan and disclose the missing independent debate rather than substituting an implementation lane silently.
 
-The schema stores named lane → implementer plus optional model/effort/variant/timeout/read-only dials. It cannot encode:
+Implementation and review must not be the same agent/session when independent review is required. `debate-review` owns its own configured review-lane dependency; feature delivery preflights that dependency but does not duplicate its model map.
 
-- T0–T4 classification or detection rules;
-- workflow sequencing, conditions, escalation, or stop criteria;
-- Claude's orchestrator role or final decision authority;
-- architecture-debate rounds and objection dispositions;
-- independence requirements between implementation and review;
-- “docs only if affected” or “debug only if stuck” semantics;
-- shared state, outputs, or acceptance criteria between stages.
-- technical prevention of direct edits by the active orchestrator.
+## Failure handling
 
-Those behaviors therefore live in `feature-delivery` instructions and are enforced by the active orchestrator. Fleet validation can prove a lane binding is syntactically valid and trusted; it cannot prove the workflow was followed. For reliable activation, invoke `$feature-delivery` explicitly and retain the dispatch evidence required above.
+Return ordinary implementation or test failures to the producing lane. For an unknown root cause, select a compatible diagnostic/fix lane dynamically and require `systematic-debugging`. Do not dispatch multiple lanes to reimplement the same surface. If a reroute changes ownership, independence, model, cost, or verification, show a revised preview before dispatch.
+
+The current fleet schema has no explicit role/tags field, so semantic routing necessarily uses lane names plus relay capabilities. If deterministic role routing becomes important, extend `delegate-fleet.v1` through `delegate-setup` with validated role metadata rather than hardcoding a new table here.
